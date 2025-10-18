@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batik Generator v6 (Kain Kustom)</title>
+  <title>Batik Generator v7 (Kain & Maket)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +14,7 @@
       font-family: 'Inter', sans-serif;
     }
 
+    /* Custom styles for range inputs */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -48,6 +49,7 @@
       cursor: pointer;
     }
 
+    /* Custom styles for color pickers */
     .color-picker-wrapper input[type="color"] {
       -webkit-appearance: none;
       -moz-appearance: none;
@@ -69,13 +71,35 @@
       border-radius: 8px;
       border: 2px solid #6b7280;
     }
-
-    #drawingCanvas {
-      touch-action: none;
+    
+    /* Styles for tab navigation */
+    .tab-button.active {
+        background-color: #4f46e5; /* indigo-600 */
+        color: #ffffff;
     }
 
-    #batikOverlay {
-      background-blend-mode: multiply;
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Prevent touch actions on canvas to allow drawing */
+    #drawingCanvas, #batikCanvas, #previewCanvas, #mockupCanvas {
+        touch-action: none;
+    }
+
+    /* Helper for centering content in canvas containers */
+    .canvas-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #374151; /* gray-700 */
+        border-radius: 0.75rem; /* rounded-xl */
+        padding: 1rem;
+        min-height: 632px; /* Ensure consistent height */
     }
   </style>
 </head>
@@ -84,364 +108,302 @@
 
   <div class="container mx-auto p-4 lg:p-8">
     <header class="text-center mb-8">
-      <h1
-        class="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
+      <h1 class="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
         Batik Generator Matematik
       </h1>
-      <p class="text-gray-400 mt-2">Sebuah Studio Kreatif untuk Pola Batik Generatif</p>
+      <p class="text-gray-400 mt-2">Studio Kreatif untuk Pola Batik, Kain, dan Maket Pakaian</p>
     </header>
 
-    <div class="text-center bg-gray-800 rounded-lg p-4 mb-6 max-w-3xl mx-auto">
-      <p class="text-gray-300">
-        🌿 <b>Petunjuk Singkat:</b><br>
-        Gunakan panel kontrol untuk membuat motif, lihat hasilnya di pratinjau kain, lalu gambar bebas di kanvas bawah.
-      </p>
-    </div>
-
     <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left/Main Content: Tabbed Interface -->
       <div class="lg:col-span-2">
-        <div class="bg-gray-800 p-4 rounded-xl shadow-2xl flex items-center justify-center">
-          <canvas id="batikCanvas" class="rounded-lg shadow-inner"></canvas>
-        </div>
-        <p class="text-center text-gray-400 text-sm mt-2 italic">
-          Pola ini dibuat otomatis dari rumus matematika sederhana — bukan gambar tangan.
-        </p>
-
-        <div class="mt-8 bg-gray-800 p-4 rounded-xl shadow-2xl">
-          <h3 class="text-xl font-semibold text-center mb-4 text-emerald-400">Pratinjau di Atas Kain</h3>
-          <div class="flex flex-col gap-4 items-center justify-center mb-4">
-            <div class="flex items-center gap-2">
-              <label for="fabricSelector" class="font-medium">Pilih Jenis Kain:</label>
-              <select id="fabricSelector" class="bg-gray-700 border-gray-600 rounded-md p-2 text-white"></select>
-            </div>
-            <div class="flex items-center gap-4">
-              <button id="applyToFabricBtn"
-                class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-lg">Terapkan Desain ke
-                Kain</button>
-              <button id="downloadPreviewBtn"
-                class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg">Download
-                Pratinjau</button>
-            </div>
-          </div>
-          <div id="fabricPreviewContainer"
-            class="relative w-full aspect-square rounded-lg overflow-hidden shadow-inner mx-auto max-w-[600px] bg-gray-700 flex items-center justify-center">
-            <div id="previewPlaceholder" class="text-gray-400 text-center p-4">
-              <p class="text-lg font-semibold">Pratinjau Kain</p>
-              <p>Setelah membuat pola, klik "Terapkan Desain ke Kain" untuk melihat hasilnya di sini.</p>
-            </div>
-            <canvas id="previewCanvas" class="absolute inset-0 w-full h-full hidden"></canvas>
-          </div>
-          <p class="text-center text-gray-500 text-xs mt-2 italic">
-            *Gambar tekstur kain adalah simulasi dan mungkin berbeda dari kain asli.
-          </p>
+        <!-- Tab Buttons -->
+        <div class="mb-4 flex flex-wrap space-x-2 bg-gray-800 p-2 rounded-lg">
+          <button data-tab="generator" class="tab-button flex-1 py-2 px-4 rounded-md font-semibold transition-colors duration-300">1. Generator Pola</button>
+          <button data-tab="fabric" class="tab-button flex-1 py-2 px-4 rounded-md font-semibold transition-colors duration-300">2. Pratinjau Kain</button>
+          <button data-tab="drawing" class="tab-button flex-1 py-2 px-4 rounded-md font-semibold transition-colors duration-300">3. Kanvas Kustom</button>
+          <button data-tab="mockup" class="tab-button flex-1 py-2 px-4 rounded-md font-semibold transition-colors duration-300">4. Maket Pakaian</button>
         </div>
 
+        <!-- Tab Content Panels -->
+        <div class="bg-gray-800 p-4 rounded-xl shadow-2xl">
+          <!-- 1. Generator Pola -->
+          <div id="generator-content" class="tab-content">
+            <div class="canvas-container">
+                <canvas id="batikCanvas" class="rounded-lg shadow-inner"></canvas>
+            </div>
+            <p class="text-center text-gray-400 text-sm mt-2 italic">
+              Pola ini dibuat otomatis dari rumus matematika sederhana — bukan gambar tangan.
+            </p>
+          </div>
+          
+          <!-- 2. Pratinjau Kain -->
+          <div id="fabric-content" class="tab-content">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-4 bg-gray-700/50 p-3 rounded-lg">
+                <label for="fabricSelector" class="font-medium whitespace-nowrap">Pilih Kain:</label>
+                <select id="fabricSelector" class="bg-gray-700 border-gray-600 rounded-md p-2 text-white w-full md:w-auto"></select>
+                <button id="applyToFabricBtn" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-lg w-full md:w-auto">Terapkan Desain</button>
+                <button id="downloadPreviewBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg w-full md:w-auto">Download</button>
+            </div>
+            <div class="canvas-container" id="fabricPreviewContainer">
+                <div id="previewPlaceholder" class="text-gray-400 text-center p-4">
+                    <p class="text-lg font-semibold">Pratinjau Kain</p>
+                    <p>Buat pola, lalu klik "Terapkan Desain" untuk melihat hasilnya di sini.</p>
+                </div>
+                <canvas id="previewCanvas" class="absolute inset-0 w-full h-full hidden"></canvas>
+            </div>
+          </div>
+
+          <!-- 3. Kanvas Desain Kustom -->
+          <div id="drawing-content" class="tab-content">
+              <div id="drawing-toolbar" class="bg-gray-700/50 p-3 rounded-lg mb-4 flex items-center justify-center gap-x-6 gap-y-4 flex-wrap">
+                  <div class="flex flex-col items-center"><label for="brushColor" class="mb-1 text-sm">Warna</label><input type="color" id="brushColor" value="#ffffff"></div>
+                  <div class="flex flex-col items-center"><label for="brushSize" class="mb-1 text-sm">Ukuran: <span id="brushSizeValue">5</span>px</label><input type="range" id="brushSize" min="1" max="100" value="5" class="w-24"></div>
+                  <button id="eraserBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-3 rounded-lg text-sm">Penghapus</button>
+                  <button id="clearCanvasBtn" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-3 rounded-lg text-sm">Bersihkan</button>
+                  <button id="downloadDrawingBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-sm">Download</button>
+              </div>
+              <div class="canvas-container">
+                  <canvas id="drawingCanvas" class="rounded-lg bg-gray-100 shadow-inner"></canvas>
+              </div>
+          </div>
+          
+          <!-- 4. Maket Pakaian -->
+          <div id="mockup-content" class="tab-content">
+             <div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-4 bg-gray-700/50 p-3 rounded-lg">
+                <button id="applyBatikToMockupBtn" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-lg w-full md:w-auto">Gunakan Pola Batik</button>
+                <label for="uploadDesign" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg cursor-pointer w-full md:w-auto text-center">Unggah Desain</label>
+                <input type="file" id="uploadDesign" class="hidden" accept="image/*">
+                <button id="downloadMockupBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg w-full md:w-auto">Download Maket</button>
+            </div>
+            <div class="canvas-container">
+                <canvas id="mockupCanvas" class="rounded-lg shadow-inner"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="bg-gray-800 p-6 rounded-xl shadow-2xl flex flex-col space-y-4">
+      <!-- Right/Side Content: Controls -->
+      <div class="bg-gray-800 p-6 rounded-xl shadow-2xl flex flex-col space-y-4 h-fit">
         <h2 class="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2">Kontrol Generator</h2>
         <div class="space-y-3">
-          <button id="generateBtn"
-            class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 text-lg">Generate
-            Pola</button>
-          <button id="randomizeBtn"
-            class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg">Acak Semua
-            Parameter</button>
-          <button id="resetBtn"
-            class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Reset ke
-            Awal</button>
-          <button id="downloadBtn"
-            class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Download Pola
-            Saja</button>
+          <button id="generateBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 text-lg">Generate Pola</button>
+          <button id="randomizeBtn" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg">Acak Semua</button>
+          <button id="resetBtn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Reset</button>
+          <button id="downloadBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Download Pola Saja</button>
         </div>
         <div class="space-y-3 pt-4 border-t border-gray-700">
-          <h3 class="text-lg font-medium text-cyan-300">Pilih Preset Motif</h3>
+          <h3 class="text-lg font-medium text-cyan-300">Preset Motif</h3>
           <select id="presetSelector" class="w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white"></select>
         </div>
         <div class="space-y-3 pt-4 border-t border-gray-700">
           <h3 class="text-lg font-medium text-cyan-300">Pengaturan Simulasi</h3>
           <div class="grid grid-cols-2 items-center"><label for="simulationSteps">Detail Pola:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="simulationSteps" min="100" max="10000"
-                step="100" value="3000"><span id="simulationStepsValue" class="w-12 text-right">3000</span></div>
+            <div class="flex items-center space-x-2"><input type="range" id="simulationSteps" min="100" max="10000" step="100" value="3000"><span id="simulationStepsValue" class="w-12 text-right">3000</span></div>
           </div>
         </div>
         <div class="space-y-3 pt-4 border-t border-gray-700">
-          <h3 class="text-lg font-medium text-cyan-300">Pola Alami (Organik)</h3>
-          <div class="grid grid-cols-2 items-center"><label for="Du">Tekstur Halus/Kasar:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="Du" min="0.01" max="0.3" step="0.001"
-                value="0.160"><span id="DuValue" class="w-12 text-right">0.160</span></div>
+          <h3 class="text-lg font-medium text-cyan-300">Pola Organik</h3>
+          <div class="grid grid-cols-2 items-center"><label for="Du">Tekstur:</label>
+            <div class="flex items-center space-x-2"><input type="range" id="Du" min="0.01" max="0.3" step="0.001" value="0.160"><span id="DuValue" class="w-12 text-right">0.160</span></div>
           </div>
-          <div class="grid grid-cols-2 items-center"><label for="Dv">Tekstur Rapat/Longgar:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="Dv" min="0.01" max="0.15" step="0.001"
-                value="0.080"><span id="DvValue" class="w-12 text-right">0.080</span></div>
+          <div class="grid grid-cols-2 items-center"><label for="Dv">Kerapatan:</label>
+            <div class="flex items-center space-x-2"><input type="range" id="Dv" min="0.01" max="0.15" step="0.001" value="0.080"><span id="DvValue" class="w-12 text-right">0.080</span></div>
           </div>
-          <div class="grid grid-cols-2 items-center"><label for="F">Pertumbuhan Pola:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="F" min="0.01" max="0.1" step="0.001"
-                value="0.060"><span id="FValue" class="w-12 text-right">0.060</span></div>
+          <div class="grid grid-cols-2 items-center"><label for="F">Pertumbuhan:</label>
+            <div class="flex items-center space-x-2"><input type="range" id="F" min="0.01" max="0.1" step="0.001" value="0.060"><span id="FValue" class="w-12 text-right">0.060</span></div>
           </div>
-          <div class="grid grid-cols-2 items-center"><label for="k">Keseimbangan Pola:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="k" min="0.04" max="0.07" step="0.001"
-                value="0.062"><span id="kValue" class="w-12 text-right">0.062</span></div>
+          <div class="grid grid-cols-2 items-center"><label for="k">Keseimbangan:</label>
+            <div class="flex items-center space-x-2"><input type="range" id="k" min="0.04" max="0.07" step="0.001" value="0.062"><span id="kValue" class="w-12 text-right">0.062</span></div>
           </div>
         </div>
         <div class="space-y-3 pt-4 border-t border-gray-700">
           <h3 class="text-lg font-medium text-cyan-300">Bentuk & Simetri</h3>
           <div class="grid grid-cols-2 items-center"><label for="rotation">Putaran:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="rotation" min="0" max="360" step="1"
-                value="45"><span id="rotationValue" class="w-12 text-right">45°</span></div>
+            <div class="flex items-center space-x-2"><input type="range" id="rotation" min="0" max="360" step="1" value="45"><span id="rotationValue" class="w-12 text-right">45°</span></div>
           </div>
-          <div class="grid grid-cols-2 items-center"><label for="scale">Besar Pola:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="scale" min="0.1" max="5" step="0.05"
-                value="1.0"><span id="scaleValue" class="w-12 text-right">1.0</span></div>
-          </div>
-          <div class="grid grid-cols-2 items-center"><label for="shearX">Lentur X:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="shearX" min="-1" max="1" step="0.01"
-                value="0.0"><span id="shearXValue" class="w-12 text-right">0.0</span></div>
-          </div>
-          <div class="grid grid-cols-2 items-center"><label for="shearY">Lentur Y:</label>
-            <div class="flex items-center space-x-2"><input type="range" id="shearY" min="-1" max="1" step="0.01"
-                value="0.0"><span id="shearYValue" class="w-12 text-right">0.0</span></div>
+          <div class="grid grid-cols-2 items-center"><label for="scale">Ukuran:</label>
+            <div class="flex items-center space-x-2"><input type="range" id="scale" min="0.1" max="5" step="0.05" value="1.0"><span id="scaleValue" class="w-12 text-right">1.0</span></div>
           </div>
         </div>
         <div class="space-y-3 pt-4 border-t border-gray-700">
-          <h3 class="text-lg font-medium text-cyan-300">Palet Warna Pola</h3>
+          <h3 class="text-lg font-medium text-cyan-300">Palet Warna</h3>
+          <select id="paletteSelector" class="w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white mb-2">
+            <option value="classic">Batik Klasik</option>
+            <option value="coastal">Batik Pesisir</option>
+            <option value="modern">Batik Modern</option>
+            <option value="forest">Alam Hijau</option>
+          </select>
           <div id="color-palette-container" class="flex flex-wrap gap-2 items-center"></div>
-          <div class="pt-2">
-            <h3 class="text-lg font-medium text-cyan-300 mb-2">Tema Warna</h3>
-            <select id="paletteSelector" class="w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white">
-              <option value="classic">Batik Klasik (Cokelat & Emas)</option>
-              <option value="coastal">Batik Pesisir (Biru & Putih)</option>
-              <option value="modern">Batik Modern (Ungu & Biru Neon)</option>
-              <option value="forest">Alam Hijau (Hijau & Krem)</option>
-            </select>
-          </div>
         </div>
       </div>
     </main>
-
-    <section id="drawing-section" class="mt-16">
-      <div class="text-center mb-6">
-        <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-lime-400">
-          Kanvas Desain Anda
-        </h2>
-        <p class="text-gray-400 mt-2">Gunakan kanvas ini untuk menggambar, menambahkan detail, atau berkreasi sesuka
-          hati.</p>
-      </div>
-      <div id="drawing-toolbar"
-        class="bg-gray-800 p-4 rounded-xl shadow-lg mb-4 flex items-center justify-center gap-x-6 gap-y-4 flex-wrap">
-        <div class="flex flex-col items-center"><label for="brushColor" class="mb-1 text-sm">Warna Kuas</label><input
-            type="color" id="brushColor" value="#000000"></div>
-        <div class="flex flex-col items-center"><label for="brushSize" class="mb-1 text-sm">Ukuran Kuas: <span
-              id="brushSizeValue">5</span>px</label><input type="range" id="brushSize" min="1" max="100" value="5"
-            class="w-32"></div>
-        <div class="flex items-center gap-4">
-          <button id="eraserBtn"
-            class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Penghapus</button>
-          <button id="clearCanvasBtn"
-            class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Bersihkan</button>
-          <button id="downloadDrawingBtn"
-            class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg">Download
-            Gambar</button>
-        </div>
-      </div>
-      <div class="bg-gray-800 p-4 rounded-xl shadow-2xl flex items-center justify-center">
-        <canvas id="drawingCanvas" class="rounded-lg bg-gray-100 shadow-inner"></canvas>
-      </div>
-    </section>
-
     <footer class="text-center mt-16 text-gray-500">
-      <p>Created by Muhammad Ibrohim Nasution — Mathematical Batik Generator</p>
+      <p>Dibuat oleh Muhammad Ibrohim Nasution — Batik Generator v7</p>
     </footer>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const batikCanvas = document.getElementById('batikCanvas');
-      const batikCtx = batikCanvas.getContext('2d');
-      const canvasSize = 600;
-      const gridSize = 200;
-      batikCanvas.width = canvasSize;
-      batikCanvas.height = canvasSize;
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Canvas Setup ---
+    const canvasSize = 600;
+    const gridSize = 200;
 
-      let p = {
+    const batikCanvas = document.getElementById('batikCanvas');
+    const batikCtx = batikCanvas.getContext('2d');
+    batikCanvas.width = canvasSize;
+    batikCanvas.height = canvasSize;
+
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewCtx = previewCanvas.getContext('2d');
+    previewCanvas.width = canvasSize;
+    previewCanvas.height = canvasSize;
+    
+    const drawingCanvas = document.getElementById('drawingCanvas');
+    const drawingCtx = drawingCanvas.getContext('2d');
+    drawingCanvas.width = canvasSize;
+    drawingCanvas.height = canvasSize;
+    
+    const mockupCanvas = document.getElementById('mockupCanvas');
+    const mockupCtx = mockupCanvas.getContext('2d');
+    mockupCanvas.width = canvasSize;
+    mockupCanvas.height = canvasSize;
+
+    // --- State Variables ---
+    let p = { // Parameters for batik generation
         Du: 0.160, Dv: 0.080, F: 0.060, k: 0.062,
-        rotation: 45, scale: 1.0, shearX: 0.0, shearY: 0.0,
-        simulationSteps: 3000
-      };
-      let grid, nextGrid;
+        rotation: 45, scale: 1.0, simulationSteps: 3000
+    };
+    let grid, nextGrid;
+    let colorsRgb = [];
+    let colorsHex = [];
+    const tShirtImage = new Image();
+    tShirtImage.src = 'https://i.ibb.co/S6pMSs3/tshirt-mockup.png'; // White T-Shirt Mockup
+    tShirtImage.onload = () => drawMockupBase();
 
-      const fabricSelector = document.getElementById('fabricSelector');
-      const previewCanvas = document.getElementById('previewCanvas');
-      const previewCtx = previewCanvas.getContext('2d');
-      const downloadPreviewBtn = document.getElementById('downloadPreviewBtn');
-      const applyToFabricBtn = document.getElementById('applyToFabricBtn');
-      const previewPlaceholder = document.getElementById('previewPlaceholder');
 
-      previewCanvas.width = 600;
-      previewCanvas.height = 600;
+    // --- Element References ---
+    const fabricSelector = document.getElementById('fabricSelector');
+    const applyToFabricBtn = document.getElementById('applyToFabricBtn');
+    const downloadPreviewBtn = document.getElementById('downloadPreviewBtn');
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    const colorPaletteContainer = document.getElementById('color-palette-container');
+    const paletteSelector = document.getElementById('paletteSelector');
+    const presetSelector = document.getElementById('presetSelector');
+    const generateBtn = document.getElementById('generateBtn');
+    const randomizeBtn = document.getElementById('randomizeBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetBtn = document.getElementById('resetBtn');
 
-      const fabricData = {
+    // --- Data ---
+    const fabricData = {
         cotton: { name: 'Katun', url: 'https://i.ibb.co/d4rW5DCs/Chat-GPT-Image-18-Okt-2025-16-04-14.png', blendMode: 'multiply' },
         silk: { name: 'Sutra', url: 'https://i.ibb.co/DHbmQhfv/Chat-GPT-Image-18-Okt-2025-16-04-18.png', blendMode: 'overlay' },
         linen: { name: 'Linen', url: 'https://i.ibb.co/nMrqTXSQ/Chat-GPT-Image-18-Okt-2025-15-56-48.png', blendMode: 'multiply' },
-        rayon: { name: 'Rayon', url: 'https://i.ibb.co/LD00j5gd/Chat-GPT-Image-18-Okt-2025-15-58-50.png', blendMode: 'soft-light' },
-        drill: { name: 'Drill', url: 'https://i.ibb.co/Q7R99dwL/Chat-GPT-Image-18-Okt-2025-16-17-07.png', blendMode: 'multiply' },
-        satin: { name: 'Satin', url: 'https://i.ibb.co/0RdYPh93/Chat-GPT-Image-18-Okt-2025-16-10-55.png', blendMode: 'soft-light' },
-        balotelli: { name: 'Balotelli', url: 'https://i.ibb.co/v6xHf90Z/Chat-GPT-Image-18-Okt-2025-16-11-00.png', blendMode: 'overlay' },
-        woolpeach: { name: 'Woolpeach', url: 'https://i.ibb.co/XxpTCpmx/Chat-GPT-Image-18-Okt-2025-16-12-27.png', blendMode: 'soft-light' }
-      };
+        rayon: { name: 'Rayon', url: 'https://i.ibb.co/LD00j5gd/Chat-GPT-Image-18-Okt-2025-15-58-50.png', blendMode: 'soft-light' }
+    };
 
-      Object.keys(fabricData).forEach(key => {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = fabricData[key].name;
-        fabricSelector.appendChild(option);
-      });
-
-      function updateFabricPreview() {
-        if (!grid) {
-          alert("Silakan buat pola terlebih dahulu dengan menekan tombol 'Generate Pola'.");
-          return;
-        }
-
-        previewPlaceholder.classList.add('hidden');
-        previewCanvas.classList.remove('hidden');
-
-        const fabricKey = fabricSelector.value;
-        const fabric = fabricData[fabricKey];
-        const fabricImg = new Image();
-        fabricImg.crossOrigin = "anonymous";
-
-        fabricImg.onload = () => {
-          previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-          previewCtx.drawImage(fabricImg, 0, 0, previewCanvas.width, previewCanvas.height);
-          previewCtx.globalCompositeOperation = fabric.blendMode;
-          previewCtx.drawImage(batikCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
-          previewCtx.globalCompositeOperation = 'source-over';
-        };
-
-        fabricImg.onerror = () => {
-          alert("Gagal memuat tekstur kain. Silakan coba lagi.");
-        };
-
-        fabricImg.src = fabric.url;
-      }
-
-      applyToFabricBtn.addEventListener('click', updateFabricPreview);
-
-      downloadPreviewBtn.addEventListener('click', () => {
-        if (previewCanvas.classList.contains('hidden')) {
-          alert("Silakan terapkan desain ke kain terlebih dahulu sebelum men-download.");
-          return;
-        }
-        const link = document.createElement('a');
-        link.download = `pratinjau_batik_${fabricSelector.value}.png`;
-        link.href = previewCanvas.toDataURL('image/png');
-        link.click();
-      });
-
-      function resetPreview() {
-        previewPlaceholder.classList.remove('hidden');
-        previewCanvas.classList.add('hidden');
-        previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-      }
-
-      let colorsRgb = [];
-      let colorsHex = [];
-      const colorPaletteContainer = document.getElementById('color-palette-container');
-      const paletteSelector = document.getElementById('paletteSelector');
-      const palettes = {
+    const palettes = {
         classic: ["#4a2c2a", "#f4e9d8", "#c2a661", "#7b5a43", "#3b1e17"],
         coastal: ["#1a3a6b", "#f0f8ff", "#8ab6d6", "#245b8a", "#f7fafc"],
         modern: ["#2d1b69", "#6c63ff", "#9c27b0", "#e0d4ff", "#ffffff"],
         forest: ["#2f4f4f", "#a3b18a", "#d9e2c3", "#3a5a40", "#588157"]
-      };
+    };
 
-      function hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [0, 0, 0];
-      }
-
-      function updateColorsFromHex() {
-        colorsRgb = colorsHex.map(hex => hexToRgb(hex));
-        if (grid) drawBatik();
-      }
-
-      function renderColorPalette() {
-        colorPaletteContainer.innerHTML = '';
-        colorsHex.forEach((hex, index) => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'relative color-picker-wrapper';
-          const colorInput = document.createElement('input');
-          colorInput.type = 'color';
-          colorInput.value = hex;
-          colorInput.addEventListener('input', (e) => {
-            colorsHex[index] = e.target.value;
-            updateColorsFromHex();
-          });
-          const removeBtn = document.createElement('button');
-          removeBtn.textContent = '×';
-          removeBtn.className = 'absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold';
-          removeBtn.onclick = () => {
-            colorsHex.splice(index, 1);
-            renderColorPalette();
-            updateColorsFromHex();
-          };
-          wrapper.appendChild(colorInput);
-          if (colorsHex.length > 2) {
-            wrapper.appendChild(removeBtn);
-          }
-          colorPaletteContainer.appendChild(wrapper);
-        });
-        const addBtn = document.createElement('button');
-        addBtn.textContent = '+';
-        addBtn.className = 'w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center text-2xl font-bold';
-        addBtn.onclick = () => {
-          colorsHex.push('#ffffff');
-          renderColorPalette();
-          updateColorsFromHex();
-        };
-        colorPaletteContainer.appendChild(addBtn);
-      }
-
-      paletteSelector.addEventListener('change', (e) => {
-        colorsHex = [...palettes[e.target.value]];
-        renderColorPalette();
-        updateColorsFromHex();
-      });
-
-      const presets = [
+    const presets = [
         { name: "Mitosis (Default)", p: { Du: 0.16, Dv: 0.08, F: 0.060, k: 0.062 } },
         { name: "Koral", p: { Du: 0.14, Dv: 0.06, F: 0.035, k: 0.065 } },
         { name: "Jaring Laba-laba", p: { Du: 0.19, Dv: 0.05, F: 0.060, k: 0.062 } },
-        { name: "Bintik & Lingkaran", p: { Du: 0.16, Dv: 0.08, F: 0.020, k: 0.055 } },
-        { name: "Sel Ikan Zebra", p: { Du: 0.12, Dv: 0.08, F: 0.020, k: 0.050 } },
         { name: "Labirin", p: { Du: 0.1, Dv: 0.05, F: 0.014, k: 0.054 } }
-      ];
-      const presetSelector = document.getElementById('presetSelector');
-      presets.forEach((preset, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = preset.name;
-        presetSelector.appendChild(option);
-      });
+    ];
 
-      function initializeGrid() {
+    // --- Tab Navigation ---
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tab = button.dataset.tab;
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                if (content.id === `${tab}-content`) {
+                    content.classList.add('active');
+                }
+            });
+        });
+    });
+
+    // --- Initialization Functions ---
+    function populateSelectors() {
+        Object.keys(fabricData).forEach(key => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = fabricData[key].name;
+            fabricSelector.appendChild(option);
+        });
+
+        presets.forEach((preset, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = preset.name;
+            presetSelector.appendChild(option);
+        });
+    }
+    
+    // --- Color Palette Functions ---
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [0, 0, 0];
+    }
+
+    function updateColorsFromHex() {
+        colorsRgb = colorsHex.map(hex => hexToRgb(hex));
+        if (grid) drawBatik();
+    }
+
+    function renderColorPalette() {
+        colorPaletteContainer.innerHTML = '';
+        colorsHex.forEach((hex, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative color-picker-wrapper';
+            const colorInput = document.createElement('input');
+            colorInput.type = 'color';
+            colorInput.value = hex;
+            colorInput.addEventListener('input', (e) => {
+                colorsHex[index] = e.target.value;
+                updateColorsFromHex();
+            });
+            wrapper.appendChild(colorInput);
+            colorPaletteContainer.appendChild(wrapper);
+        });
+    }
+
+    paletteSelector.addEventListener('change', (e) => {
+        colorsHex = [...palettes[e.target.value]];
+        renderColorPalette();
+        updateColorsFromHex();
+    });
+
+    // --- Batik Generation Logic ---
+    function initializeGrid() {
         grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null).map(() => ({ u: 1, v: 0 })));
         nextGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null).map(() => ({ u: 1, v: 0 })));
         const seedSize = 10;
         const center = Math.floor(gridSize / 2);
         for (let i = center - seedSize; i < center + seedSize; i++) {
-          for (let j = center - seedSize; j < center + seedSize; j++) {
-            if (i > 0 && i < gridSize && j > 0 && j < gridSize) {
-              grid[i][j].v = 0.5 + Math.random() * 0.2;
-              grid[i][j].u = 0.25 + Math.random() * 0.1;
+            for (let j = center - seedSize; j < center + seedSize; j++) {
+                if (i > 0 && i < gridSize && j > 0 && j < gridSize) {
+                    grid[i][j].v = 0.5 + Math.random() * 0.2;
+                }
             }
-          }
         }
-      }
+    }
 
-      function laplacian(x, y, chemical) {
+    function laplacian(x, y, chemical) {
         let sum = 0;
         sum += grid[x][y][chemical] * -1;
         sum += grid[x - 1][y][chemical] * 0.2;
@@ -453,194 +415,182 @@
         sum += grid[x - 1][y + 1][chemical] * 0.05;
         sum += grid[x + 1][y + 1][chemical] * 0.05;
         return sum;
-      }
-
-      function updateBatik() {
+    }
+    
+    function updateBatik() {
         for (let i = 1; i < gridSize - 1; i++) {
-          for (let j = 1; j < gridSize - 1; j++) {
-            const { u, v } = grid[i][j];
-            const reaction = u * v * v;
-            const laplaceU = laplacian(i, j, 'u');
-            const laplaceV = laplacian(i, j, 'v');
-            const newU = u + (p.Du * laplaceU - reaction + p.F * (1 - u));
-            const newV = v + (p.Dv * laplaceV + reaction - (p.k + p.F) * v);
-            nextGrid[i][j].u = Math.max(0, Math.min(1, newU));
-            nextGrid[i][j].v = Math.max(0, Math.min(1, newV));
-          }
+            for (let j = 1; j < gridSize - 1; j++) {
+                const { u, v } = grid[i][j];
+                const reaction = u * v * v;
+                const laplaceU = laplacian(i, j, 'u');
+                const laplaceV = laplacian(i, j, 'v');
+                const newU = u + (p.Du * laplaceU - reaction + p.F * (1 - u));
+                const newV = v + (p.Dv * laplaceV + reaction - (p.k + p.F) * v);
+                nextGrid[i][j].u = Math.max(0, Math.min(1, newU));
+                nextGrid[i][j].v = Math.max(0, Math.min(1, newV));
+            }
         }
         [grid, nextGrid] = [nextGrid, grid];
-      }
+    }
 
-      function drawBatik() {
+    function drawBatik() {
         if (!grid || !colorsRgb.length) return;
         const imageData = batikCtx.createImageData(canvasSize, canvasSize);
         const data = imageData.data;
         const rad = p.rotation * (Math.PI / 180);
         const cosR = Math.cos(rad);
         const sinR = Math.sin(rad);
-        const a = p.scale * cosR;
-        const b = -sinR + p.shearX;
-        const c = sinR + p.shearY;
-        const d = p.scale * cosR;
-        const det = a * d - b * c;
-        if (Math.abs(det) < 1e-9) return;
-        const invA = d / det;
-        const invB = -b / det;
-        const invC = -c / det;
-        const invD = a / det;
-        const centerOffset = gridSize / 2;
 
         for (let x = 0; x < canvasSize; x++) {
-          for (let y = 0; y < canvasSize; y++) {
-            const canvasX = x - canvasSize / 2;
-            const canvasY = y - canvasSize / 2;
-            let gridX = invA * canvasX + invB * canvasY + centerOffset;
-            let gridY = invC * canvasX + invD * canvasY + centerOffset;
-            gridX = (gridX % gridSize + gridSize) % gridSize;
-            gridY = (gridY % gridSize + gridSize) % gridSize;
-            const ix = Math.floor(gridX);
-            const iy = Math.floor(gridY);
-            const value = grid[ix][iy].v;
-            const colorIndex = Math.floor(value * (colorsRgb.length));
-            const color = colorsRgb[Math.min(colorsRgb.length - 1, colorIndex)];
-            const pixelIndex = (y * canvasSize + x) * 4;
-            data[pixelIndex] = color[0];
-            data[pixelIndex + 1] = color[1];
-            data[pixelIndex + 2] = color[2];
-            data[pixelIndex + 3] = 255;
-          }
+            for (let y = 0; y < canvasSize; y++) {
+                const canvasX = x - canvasSize / 2;
+                const canvasY = y - canvasSize / 2;
+
+                const rotatedX = canvasX * cosR - canvasY * sinR;
+                const rotatedY = canvasX * sinR + canvasY * cosR;
+
+                let gridX = (rotatedX / p.scale) + gridSize / 2;
+                let gridY = (rotatedY / p.scale) + gridSize / 2;
+
+                gridX = (gridX % gridSize + gridSize) % gridSize;
+                gridY = (gridY % gridSize + gridSize) % gridSize;
+
+                const ix = Math.floor(gridX);
+                const iy = Math.floor(gridY);
+
+                if (grid[ix] && grid[ix][iy]) {
+                    const value = grid[ix][iy].v;
+                    const colorIndex = Math.floor(value * (colorsRgb.length));
+                    const color = colorsRgb[Math.min(colorsRgb.length - 1, colorIndex)];
+                    const pixelIndex = (y * canvasSize + x) * 4;
+                    data[pixelIndex] = color[0];
+                    data[pixelIndex + 1] = color[1];
+                    data[pixelIndex + 2] = color[2];
+                    data[pixelIndex + 3] = 255;
+                }
+            }
         }
         batikCtx.putImageData(imageData, 0, 0);
-      }
+    }
 
-      function startGeneration() {
+    function startGeneration() {
         generateBtn.disabled = true;
         generateBtn.textContent = "Generating...";
         setTimeout(() => {
-          initializeGrid();
-          for (let i = 0; i < p.simulationSteps; i++) {
-            updateBatik();
-          }
-          drawBatik();
-          generateBtn.disabled = false;
-          generateBtn.textContent = "Generate Pola";
+            initializeGrid();
+            for (let i = 0; i < p.simulationSteps; i++) {
+                updateBatik();
+            }
+            drawBatik();
+            generateBtn.disabled = false;
+            generateBtn.textContent = "Generate Pola";
         }, 10);
-      }
+    }
 
-      const inputs = ['Du', 'Dv', 'F', 'k', 'rotation', 'scale', 'shearX', 'shearY', 'simulationSteps'];
+    // --- UI Controls & Sliders ---
+    const inputs = ['Du', 'Dv', 'F', 'k', 'rotation', 'scale', 'simulationSteps'];
 
-      function updateAllSliders() {
+    function updateAllSliders() {
         inputs.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.value = p[id];
-            el.dispatchEvent(new Event('input'));
-          }
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = p[id];
+                el.dispatchEvent(new Event('input'));
+            }
         });
-      }
+    }
 
-      inputs.forEach(id => {
+    inputs.forEach(id => {
         const el = document.getElementById(id);
         const valEl = document.getElementById(`${id}Value`);
-        el.addEventListener('input', (e) => {
-          p[id] = parseFloat(e.target.value);
-          let suffix = id === 'rotation' ? '°' : '';
-          let decimals = 0;
-          if (id === 'Du' || id === 'Dv' || id === 'F' || id === 'k') {
-            decimals = 3;
-          } else if (id === 'scale') {
-            decimals = 1;
-          } else if (id === 'shearX' || id === 'shearY') {
-            decimals = 2;
-          }
-          valEl.textContent = parseFloat(e.target.value).toFixed(decimals) + suffix;
-        });
-      });
+        if(el) {
+            el.addEventListener('input', (e) => {
+                p[id] = parseFloat(e.target.value);
+                let suffix = id === 'rotation' ? '°' : '';
+                let decimals = (id === 'Du' || id === 'Dv' || id === 'F' || id === 'k') ? 3 : (id === 'scale' ? 1 : 0);
+                valEl.textContent = parseFloat(e.target.value).toFixed(decimals) + suffix;
+            });
+             el.addEventListener('change', () => { if (grid) drawBatik(); });
+        }
+    });
 
-      const generateBtn = document.getElementById('generateBtn');
-      const randomizeBtn = document.getElementById('randomizeBtn');
-      const downloadBtn = document.getElementById('downloadBtn');
-      const resetBtn = document.getElementById('resetBtn');
-
-      function randomizeParameters() {
+    // --- Main Action Buttons ---
+    function randomizeParameters() {
         const randomPresetIndex = Math.floor(Math.random() * presets.length);
         presetSelector.value = randomPresetIndex;
         const randomPreset = presets[randomPresetIndex];
-        p.Du = randomPreset.p.Du;
-        p.Dv = randomPreset.p.Dv;
-        p.F = randomPreset.p.F;
-        p.k = randomPreset.p.k;
+        Object.assign(p, randomPreset.p);
         p.rotation = Math.floor(Math.random() * 360);
         p.scale = parseFloat((0.5 + Math.random() * 2.5).toFixed(2));
-        p.shearX = parseFloat((-0.5 + Math.random()).toFixed(2));
-        p.shearY = parseFloat((-0.5 + Math.random()).toFixed(2));
         p.simulationSteps = 1000 + Math.floor(Math.random() * 5000);
         updateAllSliders();
         startGeneration();
-      }
-
-      generateBtn.addEventListener('click', startGeneration);
-      randomizeBtn.addEventListener('click', randomizeParameters);
-
-      downloadBtn.addEventListener('click', () => {
+    }
+    
+    generateBtn.addEventListener('click', startGeneration);
+    randomizeBtn.addEventListener('click', randomizeParameters);
+    downloadBtn.addEventListener('click', () => {
         const link = document.createElement('a');
         link.download = 'batik_generatif.png';
         link.href = batikCanvas.toDataURL('image/png');
         link.click();
-      });
-
-      resetBtn.addEventListener('click', () => {
+    });
+    
+    resetBtn.addEventListener('click', () => {
         presetSelector.value = 0;
-        p = {
-          Du: 0.16,
-          Dv: 0.08,
-          F: 0.06,
-          k: 0.062,
-          rotation: 45,
-          scale: 1.0,
-          shearX: 0.0,
-          shearY: 0.0,
-          simulationSteps: 3000
-        };
+        p = { Du: 0.16, Dv: 0.08, F: 0.060, k: 0.062, rotation: 45, scale: 1.0, simulationSteps: 3000 };
         paletteSelector.value = "classic";
         paletteSelector.dispatchEvent(new Event('change'));
         updateAllSliders();
-        resetPreview();
         startGeneration();
-      });
+    });
 
-      presetSelector.addEventListener('change', (e) => {
+    presetSelector.addEventListener('change', (e) => {
         const selectedPreset = presets[e.target.value];
-        p.Du = selectedPreset.p.Du;
-        p.Dv = selectedPreset.p.Dv;
-        p.F = selectedPreset.p.F;
-        p.k = selectedPreset.p.k;
+        Object.assign(p, selectedPreset.p);
         updateAllSliders();
         startGeneration();
-      });
+    });
+    
+    // --- Fabric Preview Logic ---
+    function updateFabricPreview() {
+        if (!grid) { alert("Buat pola dulu dengan tombol 'Generate Pola'."); return; }
+        previewPlaceholder.classList.add('hidden');
+        previewCanvas.classList.remove('hidden');
+        const fabricKey = fabricSelector.value;
+        const fabric = fabricData[fabricKey];
+        const fabricImg = new Image();
+        fabricImg.crossOrigin = "anonymous";
+        fabricImg.onload = () => {
+            previewCtx.clearRect(0, 0, canvasSize, canvasSize);
+            previewCtx.drawImage(fabricImg, 0, 0, canvasSize, canvasSize);
+            previewCtx.globalCompositeOperation = fabric.blendMode;
+            previewCtx.drawImage(batikCanvas, 0, 0, canvasSize, canvasSize);
+            previewCtx.globalCompositeOperation = 'source-over';
+        };
+        fabricImg.src = fabric.url;
+    }
+    applyToFabricBtn.addEventListener('click', updateFabricPreview);
+    downloadPreviewBtn.addEventListener('click', () => {
+        if (previewCanvas.classList.contains('hidden')) { alert("Terapkan desain ke kain dulu."); return; }
+        const link = document.createElement('a');
+        link.download = `pratinjau_batik_${fabricSelector.value}.png`;
+        link.href = previewCanvas.toDataURL('image/png');
+        link.click();
+    });
 
-      const drawingCanvas = document.getElementById('drawingCanvas');
-      const drawingCtx = drawingCanvas.getContext('2d');
-      drawingCanvas.width = canvasSize * 1.5;
-      drawingCanvas.height = canvasSize * 1.5;
+    // --- Custom Drawing Canvas Logic ---
+    const drawingElements = {
+        brushColor: document.getElementById('brushColor'),
+        brushSize: document.getElementById('brushSize'),
+        brushSizeValue: document.getElementById('brushSizeValue'),
+        eraserBtn: document.getElementById('eraserBtn'),
+        clearCanvasBtn: document.getElementById('clearCanvasBtn'),
+        downloadDrawingBtn: document.getElementById('downloadDrawingBtn')
+    };
+    let isDrawing = false, lastX = 0, lastY = 0, isEraser = false;
 
-      const brushColor = document.getElementById('brushColor');
-      const brushSize = document.getElementById('brushSize');
-      const brushSizeValue = document.getElementById('brushSizeValue');
-      const eraserBtn = document.getElementById('eraserBtn');
-      const clearCanvasBtn = document.getElementById('clearCanvasBtn');
-      const downloadDrawingBtn = document.getElementById('downloadDrawingBtn');
-
-      let isDrawing = false;
-      let lastX = 0;
-      let lastY = 0;
-      let isEraser = false;
-      let currentColor = '#000000';
-
-      drawingCtx.fillStyle = "#f1f5f9";
-      drawingCtx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-
-      function drawOnCanvas(e) {
+    function drawOnCanvas(e) {
         if (!isDrawing) return;
         e.preventDefault();
         const rect = drawingCanvas.getBoundingClientRect();
@@ -650,76 +600,114 @@
         drawingCtx.moveTo(lastX, lastY);
         drawingCtx.lineTo(x, y);
         drawingCtx.stroke();
-        lastX = x;
-        lastY = y;
-      }
-
-      drawingCanvas.addEventListener('mousedown', (e) => {
+        [lastX, lastY] = [x, y];
+    }
+    
+    function startDrawing(e) {
         isDrawing = true;
         const rect = drawingCanvas.getBoundingClientRect();
-        lastX = e.clientX - rect.left;
-        lastY = e.clientY - rect.top;
-      });
+        [lastX, lastY] = [(e.clientX || e.touches[0].clientX) - rect.left, (e.clientY || e.touches[0].clientY) - rect.top];
+    }
+    
+    ['mousedown', 'touchstart'].forEach(evt => drawingCanvas.addEventListener(evt, startDrawing));
+    ['mousemove', 'touchmove'].forEach(evt => drawingCanvas.addEventListener(evt, drawOnCanvas));
+    ['mouseup', 'mouseout', 'touchend'].forEach(evt => drawingCanvas.addEventListener(evt, () => isDrawing = false));
 
-      drawingCanvas.addEventListener('touchstart', (e) => {
-        isDrawing = true;
-        const rect = drawingCanvas.getBoundingClientRect();
-        lastX = e.touches[0].clientX - rect.left;
-        lastY = e.touches[0].clientY - rect.top;
-      });
-
-      drawingCanvas.addEventListener('mousemove', drawOnCanvas);
-      drawingCanvas.addEventListener('touchmove', drawOnCanvas);
-      drawingCanvas.addEventListener('mouseup', () => isDrawing = false);
-      drawingCanvas.addEventListener('mouseout', () => isDrawing = false);
-      drawingCanvas.addEventListener('touchend', () => isDrawing = false);
-
-      brushColor.addEventListener('input', (e) => {
+    drawingElements.brushColor.addEventListener('input', (e) => {
         isEraser = false;
-        eraserBtn.classList.remove('bg-blue-500');
-        currentColor = e.target.value;
-        drawingCtx.strokeStyle = currentColor;
-      });
-
-      brushSize.addEventListener('input', (e) => {
+        drawingElements.eraserBtn.classList.remove('bg-blue-500');
+        drawingCtx.strokeStyle = e.target.value;
+    });
+    drawingElements.brushSize.addEventListener('input', (e) => {
         drawingCtx.lineWidth = e.target.value;
-        brushSizeValue.textContent = e.target.value;
-      });
-
-      eraserBtn.addEventListener('click', () => {
+        drawingElements.brushSizeValue.textContent = e.target.value;
+    });
+    drawingElements.eraserBtn.addEventListener('click', () => {
         isEraser = !isEraser;
-        if (isEraser) {
-          drawingCtx.strokeStyle = drawingCtx.fillStyle;
-          eraserBtn.classList.add('bg-blue-500');
-        } else {
-          drawingCtx.strokeStyle = currentColor;
-          eraserBtn.classList.remove('bg-blue-500');
-        }
-      });
-
-      clearCanvasBtn.addEventListener('click', () => {
+        drawingCtx.strokeStyle = isEraser ? "#f1f5f9" : drawingElements.brushColor.value;
+        drawingElements.eraserBtn.classList.toggle('bg-blue-500', isEraser);
+    });
+    drawingElements.clearCanvasBtn.addEventListener('click', () => {
         drawingCtx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      });
-
-      downloadDrawingBtn.addEventListener('click', () => {
+    });
+    drawingElements.downloadDrawingBtn.addEventListener('click', () => {
         const link = document.createElement('a');
         link.download = 'desain_kustom.png';
         link.href = drawingCanvas.toDataURL('image/png');
         link.click();
-      });
-
-      function init() {
-        paletteSelector.dispatchEvent(new Event('change'));
-        drawingCtx.lineWidth = brushSize.value;
-        drawingCtx.lineCap = 'round';
-        drawingCtx.strokeStyle = brushColor.value;
-        resetPreview();
-        randomizeParameters();
-      }
-
-      init();
     });
-  </script>
-</body>
 
+    // --- Mockup Logic ---
+    const mockupElements = {
+      applyBatikBtn: document.getElementById('applyBatikToMockupBtn'),
+      uploadInput: document.getElementById('uploadDesign'),
+      downloadBtn: document.getElementById('downloadMockupBtn')
+    };
+
+    function drawMockupBase() {
+        mockupCtx.fillStyle = '#374151';
+        mockupCtx.fillRect(0, 0, canvasSize, canvasSize);
+        mockupCtx.drawImage(tShirtImage, 0, 0, canvasSize, canvasSize);
+    }
+    
+    function applyDesignToMockup(designSource) {
+        drawMockupBase();
+        mockupCtx.globalCompositeOperation = 'multiply';
+        // Center the design on the t-shirt chest area
+        const designWidth = canvasSize * 0.4;
+        const designHeight = canvasSize * 0.4;
+        const x = (canvasSize - designWidth) / 2;
+        const y = canvasSize * 0.25;
+        mockupCtx.drawImage(designSource, x, y, designWidth, designHeight);
+        mockupCtx.globalCompositeOperation = 'source-over';
+    }
+
+    mockupElements.applyBatikBtn.addEventListener('click', () => {
+        if (!grid) { alert("Buat pola batik dulu!"); return; }
+        applyDesignToMockup(batikCanvas);
+    });
+
+    mockupElements.uploadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => applyDesignToMockup(img);
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    mockupElements.downloadBtn.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'maket_pakaian.png';
+        link.href = mockupCanvas.toDataURL('image/png');
+        link.click();
+    });
+
+    // --- Initial App Start ---
+    function init() {
+        populateSelectors();
+        paletteSelector.dispatchEvent(new Event('change'));
+        
+        // Setup drawing canvas
+        drawingCtx.fillStyle = "#f1f5f9";
+        drawingCtx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        drawingCtx.lineWidth = drawingElements.brushSize.value;
+        drawingCtx.lineCap = 'round';
+        drawingCtx.strokeStyle = drawingElements.brushColor.value;
+        
+        // Set initial active tab
+        document.querySelector('.tab-button[data-tab="generator"]').click();
+        
+        randomizeParameters(); // Generate first pattern on load
+    }
+
+    init();
+});
+</script>
+
+</body>
 </html>
