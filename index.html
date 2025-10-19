@@ -43,10 +43,14 @@
             padding-right: 2.5rem;
             -webkit-print-color-adjust: exact;
         }
+        .modal {
+    transition: opacity 0.3s ease;
+}
         .loader {
             border: 5px solid #f3f3f3;
             border-top: 5px solid #4338CA;
             border-radius: 50%;
+            
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
@@ -272,6 +276,25 @@
                                 Buat Mockup 3D
                             </button>
                         </div>
+                        <!-- Modal untuk Input API Key -->
+<div id="apiKeyModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center transform transition-all" onclick="event.stopPropagation()">
+        <h2 class="text-2xl font-bold text-gray-800 mb-3">Masukkan Kunci API</h2>
+        <p class="text-gray-600 mb-6">
+            Silakan masukkan kunci API gratis dari <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 font-semibold hover:underline">Google AI Studio</a> untuk melanjutkan.
+        </p>
+        <input type="password" id="apiKeyInput" placeholder="Masukkan kunci API Anda di sini..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+        <button id="saveApiKeyButton" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300">
+            Simpan & Lanjutkan
+        </button>
+        <button id="closeModalButton" class="mt-3 text-sm text-gray-500 hover:text-gray-700">Batal</button>
+    </div>
+</div>
+
+<!-- Tombol Ganti Kunci API - tambah di bawah tombol "Buat Mockup 3D" -->
+<button id="changeApiKeyButton" class="mt-4 text-sm text-gray-500 hover:text-blue-600 hover:underline">
+    Ganti Kunci API
+</button>
                         <!-- Result Area -->
                         <div>
                             <div class="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
@@ -329,6 +352,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const mockupSection = document.getElementById('mockup-section');
     const allTabs = [tabGenerator, tabDrawing, tabMockup];
     const allSections = [generatorSection, drawingSection, mockupSection];
+    const apiKeyModal = document.getElementById('apiKeyModal');
+const saveApiKeyButton = document.getElementById('saveApiKeyButton');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const closeModalButton = document.getElementById('closeModalButton');
+const changeApiKeyButton = document.getElementById('changeApiKeyButton');
+const API_KEY_STORAGE_NAME = 'googleAiStudioApiKey';
     // Generator Elements
     const patternCanvas = document.getElementById('pattern-canvas');
     const ptx = patternCanvas.getContext('2d');
@@ -680,6 +709,39 @@ document.addEventListener('DOMContentLoaded', function() {
             designSlots = designSlots.filter(s => s.id !== idToRemove);
             document.getElementById(`design-slot-${idToRemove}`).remove();
         });
+        // --- Objek untuk mengelola Kunci API ---
+const apiKeyManager = {
+    saveKey: (key) => {
+        try {
+            localStorage.setItem(API_KEY_STORAGE_NAME, key);
+            return true;
+        } catch (error) {
+            console.error("Gagal menyimpan kunci API:", error);
+            errorMessage.textContent = "Error: Gagal menyimpan kunci di perangkat.";
+            return false;
+        }
+    },
+    getKey: () => {
+        return localStorage.getItem(API_KEY_STORAGE_NAME);
+    },
+};
+
+// --- Fungsi untuk mengontrol tampilan modal ---
+const showApiKeyModal = () => {
+    apiKeyModal.classList.remove('hidden');
+    apiKeyModal.classList.add('flex');
+    setTimeout(() => {
+        apiKeyModal.style.opacity = '1';
+    }, 10);
+};
+
+const hideApiKeyModal = () => {
+    apiKeyModal.style.opacity = '0';
+    setTimeout(() => {
+        apiKeyModal.classList.add('hidden');
+        apiKeyModal.classList.remove('flex');
+    }, 300);
+};
     }
 
     // --- EVENT LISTENERS ---
@@ -798,7 +860,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         try {
-            const apiKey = "AIzaSyBZ9AekaX-j7qsE-i2-CzVB4VecGUT-F4Q"; 
+            const apiKey = apiKeyManager.getKey();
+if (!apiKey) {
+    errorMessage.textContent = 'Silakan masukkan API Key terlebih dahulu.';
+    errorMessage.classList.remove('hidden');
+    showApiKeyModal();
+    mockupLoader.classList.add('hidden');
+    generateMockupBtn.disabled = false;
+    generateMockupBtn.textContent = 'Buat Mockup 3D';
+    return;
+}
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [{ parts: apiParts }],
@@ -837,6 +908,30 @@ document.addEventListener('DOMContentLoaded', function() {
     createNewDesignSlot(); // Start with one slot
     setTimeout(handleGenerateClick, 100);
     setTimeout(resizeCanvases, 100);
+});
+// Event Listeners untuk API Key Modal
+changeApiKeyButton.addEventListener('click', () => {
+    apiKeyInput.value = '';
+    showApiKeyModal();
+});
+
+saveApiKeyButton.addEventListener('click', () => {
+    const newApiKey = apiKeyInput.value.trim();
+    if (newApiKey) {
+        if (apiKeyManager.saveKey(newApiKey)) {
+            hideApiKeyModal();
+        }
+    } else {
+        alert('Kunci API tidak boleh kosong.');
+    }
+});
+
+closeModalButton.addEventListener('click', hideApiKeyModal);
+
+apiKeyModal.addEventListener('click', (event) => {
+    if (event.target === apiKeyModal) {
+        hideApiKeyModal();
+    }
 });
 </script>
 
