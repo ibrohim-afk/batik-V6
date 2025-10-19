@@ -43,18 +43,17 @@
             padding-right: 2.5rem;
             -webkit-print-color-adjust: exact;
         }
-        .modal {
-    transition: opacity 0.3s ease;
-}
         .loader {
             border: 5px solid #f3f3f3;
             border-top: 5px solid #4338CA;
             border-radius: 50%;
-            
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
         }
+        .modal {
+    transition: opacity 0.3s ease;
+}
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -258,25 +257,7 @@
                     <p class="text-gray-500 mt-2">Unggah beberapa desain dan biarkan AI membuat mockup seluruh tubuh yang realistis.</p>
                 </header>
                 <main>
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <!-- Input Area -->
-                        <div class="space-y-4">
-                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">1. Unggah Desain & Tentukan Penempatan:</label>
-                                <div id="design-slots-container" class="space-y-3 max-h-60 overflow-y-auto pr-2">
-                                    <!-- Design slots will be dynamically added here by JS -->
-                                </div>
-                                <button id="add-design-slot-btn" class="mt-2 w-full text-center px-4 py-2 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition text-sm">+ Tambah File Desain</button>
-                            </div>
-                            <div>
-                                <label for="mockup-prompt" class="block text-sm font-medium text-gray-700 mb-2">2. Jelaskan Model & Gaya Pakaian:</label>
-                                <textarea id="mockup-prompt" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Contoh: Seorang wanita mengenakan jaket bomber dan celana panjang, berdiri di jalanan kota Tokyo saat malam hari."></textarea>
-                            </div>
-                            <button id="generate-mockup-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform active:scale-95 disabled:bg-indigo-300 disabled:cursor-not-allowed">
-                                Buat Mockup 3D
-                            </button>
-                        </div>
-                        <!-- Modal untuk Input API Key -->
+                  <!-- Modal untuk Input API Key -->
 <div id="apiKeyModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center transform transition-all" onclick="event.stopPropagation()">
         <h2 class="text-2xl font-bold text-gray-800 mb-3">Masukkan Kunci API</h2>
@@ -295,6 +276,24 @@
 <button id="changeApiKeyButton" class="mt-4 text-sm text-gray-500 hover:text-blue-600 hover:underline">
     Ganti Kunci API
 </button>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Input Area -->
+                        <div class="space-y-4">
+                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">1. Unggah Desain & Tentukan Penempatan:</label>
+                                <div id="design-slots-container" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                                    <!-- Design slots will be dynamically added here by JS -->
+                                </div>
+                                <button id="add-design-slot-btn" class="mt-2 w-full text-center px-4 py-2 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition text-sm">+ Tambah File Desain</button>
+                            </div>
+                            <div>
+                                <label for="mockup-prompt" class="block text-sm font-medium text-gray-700 mb-2">2. Jelaskan Model & Gaya Pakaian:</label>
+                                <textarea id="mockup-prompt" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Contoh: Seorang wanita mengenakan jaket bomber dan celana panjang, berdiri di jalanan kota Tokyo saat malam hari."></textarea>
+                            </div>
+                            <button id="generate-mockup-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform active:scale-95 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+                                Buat Mockup 3D
+                            </button>
+                        </div>
                         <!-- Result Area -->
                         <div>
                             <div class="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
@@ -352,12 +351,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const mockupSection = document.getElementById('mockup-section');
     const allTabs = [tabGenerator, tabDrawing, tabMockup];
     const allSections = [generatorSection, drawingSection, mockupSection];
-    const apiKeyModal = document.getElementById('apiKeyModal');
-const saveApiKeyButton = document.getElementById('saveApiKeyButton');
-const apiKeyInput = document.getElementById('apiKeyInput');
-const closeModalButton = document.getElementById('closeModalButton');
-const changeApiKeyButton = document.getElementById('changeApiKeyButton');
-const API_KEY_STORAGE_NAME = 'googleAiStudioApiKey';
     // Generator Elements
     const patternCanvas = document.getElementById('pattern-canvas');
     const ptx = patternCanvas.getContext('2d');
@@ -426,6 +419,12 @@ const API_KEY_STORAGE_NAME = 'googleAiStudioApiKey';
     const addDesignSlotBtn = document.getElementById('add-design-slot-btn');
     const designSlotsContainer = document.getElementById('design-slots-container');
     const downloadMockupBtn = document.getElementById('download-mockup-btn');
+    const apiKeyModal = document.getElementById('apiKeyModal');
+const saveApiKeyButton = document.getElementById('saveApiKeyButton');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const closeModalButton = document.getElementById('closeModalButton');
+const changeApiKeyButton = document.getElementById('changeApiKeyButton');
+const API_KEY_STORAGE_NAME = 'googleAiStudioApiKey';
     
     // --- STATE VARIABLES ---
     let layerIdCounter = 0;
