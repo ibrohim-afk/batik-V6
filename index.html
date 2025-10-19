@@ -536,7 +536,7 @@
       const changeApiKeyButton = document.getElementById('changeApiKeyButton');
       const API_KEY_STORAGE_NAME = 'googleAiStudioApiKey';
 
-      // ⬇️⬇️⬇️ TEMPATKAN FUNGSI API MANAGER DI SINI - SEBELUM EVENT LISTENERS ⬇️⬇️⬇️
+      // --- Objek untuk mengelola Kunci API ---
       const apiKeyManager = {
         saveKey: (key) => {
           try {
@@ -565,7 +565,6 @@
           apiKeyModal.classList.remove('flex');
         }, 300);
       };
-      // ⬆️⬆️⬆️ TEMPATKAN DI SINI ⬆️⬆️⬆️
 
       // --- STATE VARIABLES ---
       let layerIdCounter = 0;
