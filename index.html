@@ -1,565 +1,845 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batik Generator v6 (Kain Kustom)</title>
-    <!-- TailwindCSS CDN -->
+    <title>Studio Batik (Mode Ganda)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        body { font-family: 'Inter', sans-serif; background-color: #FDFDFB; }
+        h1, h2, h3, h4 { font-family: 'Cinzel', serif; }
+        .fabric-bg {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZHRoPSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZHRoPSIyMCIgZmlsbD0iI0ZGRkZGRSIgb3BhY2l0eT0iMC4wMiI+PC9yZWN0Pgo8cGF0aCBkPSJNMCAxMEwxMCAyMEwyMCAxMEwxMCAwWiIgZmlsbD0iI2Y5ZjlmOSIgb3BhY2l0eT0iMC4wNSI+PC9wYXRoPgo8L3N2Zz4=');
+            background-color: #FDFDFB;
         }
-        input[type="range"] {
-            -webkit-appearance: none; appearance: none;
-            width: 100%; height: 8px; border-radius: 5px; background: #4a5568;
-            outline: none; opacity: 0.7; transition: opacity .2s;
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 18px; height: 18px;
+            background: #4338CA; cursor: pointer; border-radius: 50%;
         }
-        input[type="range"]:hover { opacity: 1; }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none;
-            width: 20px; height: 20px; border-radius: 50%;
-            background: #a3bffa; cursor: pointer;
-        }
-        input[type="range"]::-moz-range-thumb {
-            width: 20px; height: 20px; border-radius: 50%;
-            background: #a3bffa; cursor: pointer;
-        }
-        .color-picker-wrapper input[type="color"] {
+        input[type="color"] {
             -webkit-appearance: none; -moz-appearance: none; appearance: none;
-            width: 48px; height: 48px; background-color: transparent; border: none; cursor: pointer;
-            padding: 0;
+            width: 100%; height: 40px; padding: 0; border: none;
+            background-color: transparent; cursor: pointer;
         }
-        .color-picker-wrapper input[type="color"]::-webkit-color-swatch {
-            border-radius: 8px; border: 2px solid #6b7280;
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid #e2e8f0; border-radius: 0.375rem;
         }
-        .color-picker-wrapper input[type="color"]::-moz-color-swatch {
-            border-radius: 8px; border: 2px solid #6b7280;
+        .toggle-checkbox:checked { right: 0; border-color: #1E3A8A; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #1E3A8A; }
+        .tab-btn.active, .control-btn.active, .basic-symmetry-tool.active {
+            background-color: #EEF2FF;
+            color: #312E81;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
         }
-        #drawingCanvas {
-            touch-action: none;
+        select {
+             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-print-color-adjust: exact;
         }
-        /* Style for the batik overlay to blend with the texture */
-        #batikOverlay {
-            background-blend-mode: multiply; /* Default blend mode */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4338CA;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 antialiased">
+<body class="fabric-bg text-gray-800 antialiased">
 
-    <div class="container mx-auto p-4 lg:p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
-                Batik Generator Matematik
-            </h1>
-            <p class="text-gray-400 mt-2">Sebuah Studio Kreatif untuk Pola Batik Generatif</p>
-        </header>
-
-        <div class="text-center bg-gray-800 rounded-lg p-4 mb-6 max-w-3xl mx-auto">
-          <p class="text-gray-300">
-            🌿 <b>Petunjuk Singkat:</b><br>
-            Buat pola, unduh, lalu unggah ke bagian Pratinjau Kain untuk melihat hasil akhirnya.
-          </p>
+    <main class="max-w-7xl mx-auto py-12 px-6 lg:px-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-6xl font-bold text-indigo-900">Studio Batik Digital</h1>
+            <p class="mt-4 text-lg text-gray-600">Alur kerja lengkap dari ide, desain, hingga visualisasi produk 3D.</p>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="mb-8 flex justify-center border-b flex-wrap">
+            <button id="tab-generator" class="tab-btn active text-lg font-semibold py-4 px-6 -mb-px border-b-2 border-transparent hover:text-indigo-700">1. Generator Otomatis</button>
+            <button id="tab-drawing" class="tab-btn text-lg font-semibold py-4 px-6 -mb-px border-b-2 border-transparent hover:text-indigo-700">2. Studio Menggambar</button>
+            <button id="tab-mockup" class="tab-btn text-lg font-semibold py-4 px-6 -mb-px border-b-2 border-transparent hover:text-indigo-700">3. Generator Mockup 3D</button>
         </div>
 
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2">
-                <div class="bg-gray-800 p-4 rounded-xl shadow-2xl flex items-center justify-center">
-                    <canvas id="batikCanvas" class="rounded-lg shadow-inner"></canvas>
-                </div>
-                 <p class="text-center text-gray-400 text-sm mt-2 italic">
-                    Pola ini dibuat otomatis dari rumus matematika sederhana — bukan gambar tangan.
-                </p>
-
-                <!-- Bentuk & Simetri Controls Moved Here -->
-                <div class="mt-4 bg-gray-800 p-6 rounded-xl shadow-2xl space-y-3">
-                    <h3 class="text-lg font-medium text-cyan-300 border-b border-gray-700 pb-2 mb-4">Bentuk & Simetri</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label for="rotation" class="text-sm">Putaran:</label>
-                            <div class="flex items-center space-x-2"><input type="range" id="rotation" min="0" max="360" step="1" value="45"><span id="rotationValue" class="w-12 text-right">45°</span></div>
+        <!-- Generator Section -->
+        <section id="generator-section">
+            <div class="grid lg:grid-cols-12 gap-8">
+                <!-- Generator Controls -->
+                <div class="lg:col-span-4 bg-white p-6 rounded-lg shadow-lg border space-y-4">
+                    <div>
+                        <label class="block font-medium mb-2 text-sm text-center">Warna Latar Global</label>
+                        <input id="bg-color-picker" type="color" value="#FEFBEB" class="h-12">
+                    </div>
+                    <div class="space-y-4 max-h-[45rem] overflow-y-auto pr-2">
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-lg text-center text-indigo-800">Lapisan Badan (Wallpaper)</h3>
+                            <div id="wallpaper-layer-container" class="space-y-3 mt-2"></div>
+                            <button id="add-wallpaper-btn" class="w-full text-center mt-3 px-4 py-2 bg-indigo-100 text-indigo-800 font-bold rounded-lg hover:bg-indigo-200 transition text-sm">+ Tambah Pola Badan</button>
                         </div>
-                        <div>
-                            <label for="scale" class="text-sm">Besar Pola:</label>
-                            <div class="flex items-center space-x-2"><input type="range" id="scale" min="0.1" max="5" step="0.05" value="1.0"><span id="scaleValue" class="w-12 text-right">1.0</span></div>
-                        </div>
-                        <div>
-                            <label for="shearX" class="text-sm">Lentur X:</label>
-                            <div class="flex items-center space-x-2"><input type="range" id="shearX" min="-1" max="1" step="0.01" value="0.0"><span id="shearXValue" class="w-12 text-right">0.0</span></div>
-                        </div>
-                        <div>
-                            <label for="shearY" class="text-sm">Lentur Y:</label>
-                            <div class="flex items-center space-x-2"><input type="range" id="shearY" min="-1" max="1" step="0.01" value="0.0"><span id="shearYValue" class="w-12 text-right">0.0</span></div>
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-lg text-center text-amber-800">Lapisan Pinggiran (Frieze)</h3>
+                            <div id="frieze-layer-container" class="space-y-3 mt-2"></div>
+                            <button id="add-frieze-btn" class="w-full text-center mt-3 px-4 py-2 bg-amber-100 text-amber-800 font-bold rounded-lg hover:bg-amber-200 transition text-sm">+ Tambah Pola Pinggiran</button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Fabric Preview Section -->
-                <div class="mt-8 bg-gray-800 p-4 rounded-xl shadow-2xl">
-                    <h3 class="text-xl font-semibold text-center mb-4 text-emerald-400">Pratinjau di Atas Kain</h3>
-                    <div class="flex flex-col gap-4 items-center justify-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <label for="fabricSelector" class="font-medium">Pilih Jenis Kain:</label>
-                            <select id="fabricSelector" class="bg-gray-700 border-gray-600 rounded-md p-2 text-white"></select>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <label for="uploadPatternInput" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-lg cursor-pointer transition-colors">
-                                Upload Pola Batik
-                            </label>
-                            <input type="file" id="uploadPatternInput" class="hidden" accept="image/png, image/jpeg">
-                            <button id="downloadPreviewBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg">Download Pratinjau</button>
-                        </div>
-                    </div>
-                    <div id="fabricPreviewContainer" class="relative w-full aspect-square rounded-lg overflow-hidden shadow-inner mx-auto max-w-[600px] bg-gray-700 flex items-center justify-center">
-                        <div id="previewPlaceholder" class="text-gray-400 text-center p-4">
-                            <p class="text-lg font-semibold">Pratinjau Kain</p>
-                            <p>Upload gambar pola batik Anda untuk melihat hasilnya di sini.</p>
-                        </div>
-                        <img id="fabricTexture" src="" alt="Fabric Texture" class="absolute inset-0 w-full h-full object-cover hidden" crossorigin="anonymous">
-                        <div id="batikOverlay" class="absolute inset-0 w-full h-full bg-cover bg-center hidden"></div>
-                    </div>
-                     <p class="text-center text-gray-500 text-xs mt-2 italic">
-                        *Gambar tekstur kain adalah simulasi dan mungkin berbeda dari kain asli.
-                    </p>
-                </div>
-
-            </div>
-
-            <div class="bg-gray-800 p-6 rounded-xl shadow-2xl flex flex-col space-y-4">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2">Kontrol Generator</h2>
-                <div class="space-y-3">
-                    <button id="generateBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 text-lg">Generate Pola</button>
-                    <button id="randomizeBtn" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg">Acak Semua Parameter</button>
-                    <button id="resetBtn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Reset ke Awal</button>
-                    <button id="downloadBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Download Pola Saja</button>
-                </div>
-                <div class="space-y-3 pt-4 border-t border-gray-700">
-                    <h3 class="text-lg font-medium text-cyan-300">Pilih Preset Motif</h3>
-                    <select id="presetSelector" class="w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white"></select>
-                </div>
-                <div class="space-y-3 pt-4 border-t border-gray-700">
-                    <h3 class="text-lg font-medium text-cyan-300">Pengaturan Simulasi</h3>
-                     <div class="grid grid-cols-2 items-center"><label for="simulationSteps">Detail Pola:</label><div class="flex items-center space-x-2"><input type="range" id="simulationSteps" min="100" max="10000" step="100" value="3000"><span id="simulationStepsValue" class="w-12 text-right">3000</span></div></div>
-                </div>
-                <div class="space-y-3 pt-4 border-t border-gray-700">
-                    <h3 class="text-lg font-medium text-cyan-300">Pola Alami (Organik)</h3>
-                    <div class="grid grid-cols-2 items-center"><label for="Du">Tekstur Halus/Kasar:</label><div class="flex items-center space-x-2"><input type="range" id="Du" min="0.01" max="0.3" step="0.001" value="0.160"><span id="DuValue" class="w-12 text-right">0.160</span></div></div>
-                    <div class="grid grid-cols-2 items-center"><label for="Dv">Tekstur Rapat/Longgar:</label><div class="flex items-center space-x-2"><input type="range" id="Dv" min="0.01" max="0.15" step="0.001" value="0.080"><span id="DvValue" class="w-12 text-right">0.080</span></div></div>
-                    <div class="grid grid-cols-2 items-center"><label for="F">Pertumbuhan Pola:</label><div class="flex items-center space-x-2"><input type="range" id="F" min="0.01" max="0.1" step="0.001" value="0.060"><span id="FValue" class="w-12 text-right">0.060</span></div></div>
-                    <div class="grid grid-cols-2 items-center"><label for="k">Keseimbangan Pola:</label><div class="flex items-center space-x-2"><input type="range" id="k" min="0.04" max="0.07" step="0.001" value="0.062"><span id="kValue" class="w-12 text-right">0.062</span></div></div>
-                </div>
-                <div class="space-y-3 pt-4 border-t border-gray-700">
-                    <h3 class="text-lg font-medium text-cyan-300">Atur Palet Warna Anda</h3>
-                    <div id="color-palette-container" class="flex flex-wrap gap-2 items-center">
-                        <!-- Color pickers will be generated by JavaScript -->
+                    <div class="border-t pt-4">
+                        <button id="generate-btn" class="w-full text-center px-6 py-4 bg-indigo-800 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-900 transition">Generate Komposisi</button>
+                        <a id="download-btn" class="w-full block text-center mt-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-lg hover:bg-emerald-700 transition">Unduh Hasil (PNG)</a>
                     </div>
                 </div>
-            </div>
-        </main>
-        
-        <section id="drawing-section" class="mt-16">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-lime-400">
-                    Kanvas Desain Anda
-                </h2>
-                <p class="text-gray-400 mt-2">Gunakan kanvas ini untuk menggambar, menambahkan detail, atau berkreasi sesuka hati.</p>
-            </div>
-            <div id="drawing-toolbar" class="bg-gray-800 p-4 rounded-xl shadow-lg mb-4 flex items-center justify-center gap-x-6 gap-y-4 flex-wrap">
-                <div class="flex flex-col items-center"><label for="brushColor" class="mb-1 text-sm">Warna Kuas</label><input type="color" id="brushColor" value="#000000"></div>
-                <div class="flex flex-col items-center"><label for="brushSize" class="mb-1 text-sm">Ukuran Kuas: <span id="brushSizeValue">5</span>px</label><input type="range" id="brushSize" min="1" max="100" value="5" class="w-32"></div>
-                <div class="flex items-center gap-4">
-                    <button id="eraserBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Penghapus</button>
-                    <button id="clearCanvasBtn" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Bersihkan</button>
-                    <button id="downloadDrawingBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg">Download Gambar</button>
+                <!-- Generator Canvas -->
+                <div class="lg:col-span-8 bg-white rounded-lg shadow-2xl p-2 border overflow-hidden">
+                    <canvas id="pattern-canvas" class="w-full h-full rounded-md" style="height: 600px;"></canvas>
                 </div>
-            </div>
-            <div class="bg-gray-800 p-4 rounded-xl shadow-2xl flex items-center justify-center">
-                <canvas id="drawingCanvas" class="rounded-lg bg-gray-100 shadow-inner"></canvas>
             </div>
         </section>
 
-        <footer class="text-center mt-16 text-gray-500">
-            <p>Created by Muhammad Ibrohim Nasution — Mathematical Batik Generator</p>
-        </footer>
-    </div>
+        <!-- Drawing Studio Section -->
+        <section id="drawing-section" class="hidden">
+             <div class="grid lg:grid-cols-12 gap-8">
+                <!-- Drawing Canvas -->
+                <div class="lg:col-span-9 bg-white rounded-lg shadow-2xl p-2 border overflow-hidden relative">
+                    <canvas id="background-canvas" class="absolute top-0 left-0 w-full h-full rounded-md" style="z-index: 0;"></canvas>
+                    <canvas id="drawing-canvas" class="absolute top-0 left-0 w-full h-full rounded-md cursor-crosshair" style="z-index: 1; height: 600px;"></canvas>
+                </div>
+                <!-- Drawing Controls -->
+                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-lg border space-y-4">
+                    <h3 class="font-bold text-lg text-center">Alat Menggambar</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-medium mb-1 text-sm">Warna</label>
+                            <input id="brush-color-picker" type="color" value="#1E3A8A" class="h-10">
+                        </div>
+                         <div id="brush-size-control">
+                            <label class="block font-medium mb-1 text-sm">Ukuran Kuas: <span id="brush-size-val">5</span></label>
+                            <input id="brush-size-slider" type="range" min="1" max="150" value="5" class="w-full h-2 bg-gray-200 rounded-lg mt-2">
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-1 gap-2">
+                         <button id="fill-toggle" class="control-btn active w-full p-2 text-sm rounded-lg border">Mode Isi (Fill On)</button>
+                    </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- BATIK GENERATOR SETUP ---
-        const batikCanvas = document.getElementById('batikCanvas');
-        const batikCtx = batikCanvas.getContext('2d');
-        const canvasSize = 600;
-        const gridSize = 200;
-        batikCanvas.width = canvasSize;
-        batikCanvas.height = canvasSize;
+                    <div class="border-t pt-4 space-y-2">
+                         <h3 class="font-medium text-center mb-2">Mode Simetri Dasar</h3>
+                         <div class="grid grid-cols-3 gap-2">
+                            <button class="basic-symmetry-tool p-3 rounded-lg border text-xs" data-mode="free">Bebas</button>
+                            <button class="basic-symmetry-tool p-3 rounded-lg border text-xs" data-mode="ver">Vertikal</button>
+                            <button class="basic-symmetry-tool p-3 rounded-lg border text-xs" data-mode="hor">Horizontal</button>
+                            <button class="basic-symmetry-tool p-3 rounded-lg border text-xs" data-mode="quad">Kuadran</button>
+                            <button class="basic-symmetry-tool p-3 rounded-lg border text-xs active" data-mode="rad">Radial</button>
+                            <button class="basic-symmetry-tool p-3 rounded-lg border text-xs" data-mode="stamp">Stempel</button>
+                         </div>
+                    </div>
+                    
+                     <div class="p-3 rounded-lg bg-green-50 border border-green-200 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="draw-frieze-toggle" class="font-medium text-sm text-green-800">Ulangi dgn Pola Pinggiran</label>
+                            <div class="relative inline-block w-10 align-middle select-none">
+                                <input type="checkbox" id="draw-frieze-toggle" class="toggle-checkbox symmetry-group-toggle absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                <label for="draw-frieze-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        <div id="draw-frieze-controls" class="hidden space-y-2 text-sm">
+                           <select id="draw-frieze-select" class="w-full p-2 border rounded-md shadow-sm text-xs appearance-none bg-white"></select>
+                        </div>
+                    </div>
 
-        let p = {
-            Du: 0.160, Dv: 0.080, F: 0.060, k: 0.062,
-            rotation: 45, scale: 1.0, shearX: 0.0, shearY: 0.0,
-            simulationSteps: 3000
-        };
-        let grid;
-        let uploadedPatternImage = null; // To store the uploaded image object
+                     <div class="p-3 rounded-lg bg-purple-50 border border-purple-200 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="draw-wallpaper-toggle" class="font-medium text-sm text-purple-800">Ulangi dgn Pola Badan</label>
+                            <div class="relative inline-block w-10 align-middle select-none">
+                                <input type="checkbox" id="draw-wallpaper-toggle" class="toggle-checkbox symmetry-group-toggle absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                <label for="draw-wallpaper-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        <div id="draw-wallpaper-controls" class="hidden space-y-2 text-sm">
+                           <select id="draw-wallpaper-select" class="w-full p-2 border rounded-md shadow-sm text-xs appearance-none bg-white"></select>
+                        </div>
+                    </div>
+                     
+                     <div id="symmetry-spacing-control" class="hidden">
+                        <label class="block font-medium text-sm">Kerapatan Pola Ulang: <span id="symmetry-spacing-val">150</span></label>
+                        <input id="symmetry-spacing-slider" type="range" min="50" max="400" value="150" class="w-full h-2 bg-gray-200 rounded-lg">
+                     </div>
 
-        // --- FABRIC PREVIEW SETUP ---
-        const fabricSelector = document.getElementById('fabricSelector');
-        const fabricTexture = document.getElementById('fabricTexture');
-        const batikOverlay = document.getElementById('batikOverlay');
-        const downloadPreviewBtn = document.getElementById('downloadPreviewBtn');
-        const uploadPatternInput = document.getElementById('uploadPatternInput');
-        const previewPlaceholder = document.getElementById('previewPlaceholder');
+                     <div id="radial-control" class="space-y-2 text-center">
+                        <label class="text-sm font-medium">Jumlah Sektor Radial</label>
+                         <div class="flex items-center justify-center space-x-2">
+                             <button id="rad-minus" class="px-3 py-1 border rounded-md">-</button>
+                             <span id="rad-count" class="text-lg font-bold">6</span>
+                             <button id="rad-plus" class="px-3 py-1 border rounded-md">+</button>
+                         </div>
+                     </div>
+                     <div id="stamp-control" class="space-y-2 hidden">
+                        <label for="stamp-motif-select" class="text-sm font-medium">Pilih Motif Stempel</label>
+                        <select id="stamp-motif-select" class="w-full p-2 border rounded-md shadow-sm text-sm bg-white appearance-none"></select>
+                        <label class="block font-medium text-sm pt-2">Ukuran Stempel: <span id="stamp-size-val">80</span></label>
+                        <input id="stamp-size-slider" type="range" min="10" max="250" value="80" class="w-full h-2 bg-gray-200 rounded-lg">
+                     </div>
+
+                     <div class="border-t pt-4 space-y-4">
+                        <h3 class="font-bold text-lg text-center">Tambahan Motif</h3>
+                        <div>
+                           <label class="block font-medium mb-1 text-sm">Warna Latar Dasar</label>
+                           <input id="drawing-bg-color" type="color" value="#FEFBEB" class="h-10">
+                        </div>
+                        <div class="p-3 rounded-lg bg-indigo-50 border border-indigo-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="show-wallpaper-toggle" class="font-medium text-sm text-indigo-800">Tampilkan Badan</label>
+                                <div class="relative inline-block w-10 align-middle select-none">
+                                    <input type="checkbox" id="show-wallpaper-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                    <label for="show-wallpaper-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                            </div>
+                            <div id="wallpaper-controls-drawing" class="hidden space-y-2 text-sm">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <select id="drawing-wallpaper-motif" class="appearance-none bg-white"></select>
+                                    <input id="drawing-wallpaper-color" type="color" value="#A5B4FC">
+                                </div>
+                                <select id="drawing-wallpaper-symmetry" class="appearance-none bg-white"></select>
+                                <label>Ukuran: <span id="dw-size-val">50</span></label>
+                                <input id="drawing-wallpaper-size" type="range" min="10" max="150" value="50">
+                                <label>Kerapatan: <span id="dw-spacing-val">120</span></label>
+                                <input id="drawing-wallpaper-spacing" type="range" min="50" max="300" value="120">
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="show-frieze-toggle" class="font-medium text-sm text-amber-800">Tampilkan Pinggiran</label>
+                                <div class="relative inline-block w-10 align-middle select-none">
+                                    <input type="checkbox" id="show-frieze-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                    <label for="show-frieze-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                            </div>
+                            <div id="frieze-controls-drawing" class="hidden space-y-2 text-sm">
+                                 <div class="grid grid-cols-2 gap-2">
+                                    <select id="drawing-frieze-motif" class="appearance-none bg-white"></select>
+                                    <input id="drawing-frieze-color" type="color" value="#FCD34D">
+                                </div>
+                                <select id="drawing-frieze-symmetry" class="appearance-none bg-white"></select>
+                                <label>Ukuran: <span id="df-size-val">50</span></label>
+                                <input id="drawing-frieze-size" type="range" min="10" max="150" value="50">
+                                <label>Kerapatan: <span id="df-spacing-val">120</span></label>
+                                <input id="drawing-frieze-spacing" type="range" min="50" max="300" value="120">
+                            </div>
+                        </div>
+                         <div class="grid grid-cols-2 gap-2">
+                            <button id="apply-background-btn" class="w-full text-center px-4 py-2 bg-indigo-100 text-indigo-800 font-bold rounded-lg hover:bg-indigo-200 transition text-sm">Terapkan Latar</button>
+                            <button id="clear-drawing-btn" class="w-full text-center px-4 py-2 bg-red-100 text-red-800 font-bold rounded-lg hover:bg-red-200 transition text-sm">Bersihkan Goresan</button>
+                        </div>
+                     </div>
+                    <div class="border-t pt-4">
+                         <a id="download-drawing-btn" class="w-full block text-center mt-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-lg hover:bg-emerald-700 transition">Unduh Motif</a>
+                    </div>
+                </div>
+            </div>
+        </section>
         
-        const fabricData = {
-            cotton:    { name: 'Katun', url: 'https://i.ibb.co/d4rW5DCs/Chat-GPT-Image-18-Okt-2025-16-04-14.png', blendMode: 'multiply' },
-            silk:      { name: 'Sutra', url: 'https://i.ibb.co/DHbmQhfv/Chat-GPT-Image-18-Okt-2025-16-04-18.png', blendMode: 'overlay' },
-            linen:     { name: 'Linen', url: 'https://i.ibb.co/nMrqTXSQ/Chat-GPT-Image-18-Okt-2025-15-56-48.png', blendMode: 'multiply' },
-            rayon:     { name: 'Rayon', url: 'https://i.ibb.co/LD00j5gd/Chat-GPT-Image-18-Okt-2025-15-58-50.png', blendMode: 'soft-light' },
-            drill:     { name: 'Drill', url: 'https://i.ibb.co/Q7R99dwL/Chat-GPT-Image-18-Okt-2025-16-17-07.png', blendMode: 'multiply' },
-            satin:     { name: 'Satin', url: 'https://i.ibb.co/0RdYPh93/Chat-GPT-Image-18-Okt-2025-16-10-55.png', blendMode: 'soft-light' },
-            balotelli: { name: 'Balotelli', url: 'https://i.ibb.co/v6xHf90Z/Chat-GPT-Image-18-Okt-2025-16-11-00.png', blendMode: 'overlay' },
-            woolpeach: { name: 'Woolpeach', url: 'https://i.ibb.co/XxpTCpmx/Chat-GPT-Image-18-Okt-2025-16-12-27.png', blendMode: 'soft-light' },
-            denim:     { name: 'Denim', url: 'https://i.ibb.co/pXN0YJj/denim-texture.jpg', blendMode: 'multiply' }
-        };
-        
-        Object.keys(fabricData).forEach(key => {
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = fabricData[key].name;
-            fabricSelector.appendChild(option);
+        <!-- Mockup Generator Section -->
+        <section id="mockup-section" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-4xl mx-auto">
+                <header class="text-center mb-6">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Visualisasi Produk 3D</h1>
+                    <p class="text-gray-500 mt-2">Unggah beberapa desain dan biarkan AI membuat mockup seluruh tubuh yang realistis.</p>
+                </header>
+                <main>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Input Area -->
+                        <div class="space-y-4">
+                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">1. Unggah Desain & Tentukan Penempatan:</label>
+                                <div id="design-slots-container" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                                    <!-- Design slots will be dynamically added here by JS -->
+                                </div>
+                                <button id="add-design-slot-btn" class="mt-2 w-full text-center px-4 py-2 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition text-sm">+ Tambah File Desain</button>
+                            </div>
+                            <div>
+                                <label for="mockup-prompt" class="block text-sm font-medium text-gray-700 mb-2">2. Jelaskan Model & Gaya Pakaian:</label>
+                                <textarea id="mockup-prompt" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Contoh: Seorang wanita mengenakan jaket bomber dan celana panjang, berdiri di jalanan kota Tokyo saat malam hari."></textarea>
+                            </div>
+                            <button id="generate-mockup-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform active:scale-95 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+                                Buat Mockup 3D
+                            </button>
+                        </div>
+                        <!-- Result Area -->
+                        <div>
+                            <div class="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+                                <div id="mockup-placeholder" class="text-center text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="mt-2 text-sm">Gambar mockup 3D akan muncul di sini</p>
+                                </div>
+                                <div id="mockup-loader" class="loader hidden"></div>
+                                <img id="result-image" src="" alt="Hasil gambar mockup" class="rounded-lg object-contain max-w-full max-h-full hidden">
+                            </div>
+                             <a id="download-mockup-btn" class="hidden w-full block text-center mt-4 px-6 py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-lg hover:bg-emerald-700 transition">Unduh Mockup (PNG)</a>
+                        </div>
+                    </div>
+                     <div id="error-message" class="text-red-500 text-center mt-4 hidden"></div>
+                </main>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-indigo-900 text-white py-12 px-6 mt-20">
+         <div class="max-w-6xl mx-auto text-center">
+            <p class="font-semibold">Didesain oleh Tari Gaga — menggabungkan seni batik & matematika kristalografi.</p>
+            <p class="text-sm mt-8 text-indigo-200">&copy; 2025 Batik Kristalografi & Frieze. All rights reserved.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- GLOBAL MOTIFS & CONFIG ---
+    const motifs = {
+        parang: new Path2D('M -30,-50 C -50,-10 -10,10 10,50 C 30,10 70,-10 30,-50 C 10,-20 -10,-20 -30,-50 Z'),
+        kawung: new Path2D('M 0 -30 A 20 30 0 0 1 0 30 A 20 30 0 0 1 0 -30 M -30 0 A 30 20 0 0 1 30 0 A 30 20 0 0 1 -30 0 M 0 -5 A 5 5 0 0 1 0 5 A 5 5 0 0 1 0 -5 Z'),
+        truntum: new Path2D('M 0 -25 C 10 -15, 10 -15, 15 -15 L 25 0 L 15 15 C 10 15, 10 15, 0 25 C -10 15, -10 15, -15 15 L -25 0 L -15 -15 C -10 -15, -10 -15, 0 -25 Z'),
+        sidomukti: new Path2D('M 0 -30 L 30 0 L 0 30 L -30 0 Z M 0 -15 C 10 -5, 15 5, 0 15 C -15 5, -10 -5, 0 -15 Z'),
+        'mega-mendung': new Path2D('M -50 20 C -40 -10, 0 -10, 20 10 C 40 -5, 60 10, 50 30 C 30 40, -10 40, -30 30 C -50 20, -70 10, -50 20 Z M -35 10 C -25 -20, 15 -20, 35 0 C 55 -15, 75 0, 65 20 C 45 30, 5 30, -15 20 C -35 10, -55 0, -35 10 Z'),
+        ceplok: new Path2D('M-25,-25 H25 V25 H-25 Z M 0 -20 L 20 0 L 0 20 L -20 0 Z M 0 -10 A 10 10 0 0 1 0 10 A 10 10 0 0 1 0 -10 Z'),
+        tumpal: new Path2D('M 0 -30 L 25 25 L -25 25 Z'),
+        lereng: new Path2D('M -40 -20 L 0 20 L 40 -20 M -20 -40 L 20 0 L 60 -40')
+    };
+    const symmetryOptions = {
+        wallpaper: ['w_p1','w_p2','w_pm','w_pg','w_cm','w_pmm','w_pmg','w_pgg','w_cmm','w_p4','w_p4m','w_p4g','w_p3','w_p3m1','w_p31m','w_p6','w_p6m'],
+        frieze: ['f_p1','f_p2','f_p1m1','f_p11m','f_p11g','f_p2mg','f_p2mm']
+    };
+
+    // --- DOM ELEMENT SELECTORS ---
+    // Tabs & Sections
+    const tabGenerator = document.getElementById('tab-generator');
+    const tabDrawing = document.getElementById('tab-drawing');
+    const tabMockup = document.getElementById('tab-mockup');
+    const generatorSection = document.getElementById('generator-section');
+    const drawingSection = document.getElementById('drawing-section');
+    const mockupSection = document.getElementById('mockup-section');
+    const allTabs = [tabGenerator, tabDrawing, tabMockup];
+    const allSections = [generatorSection, drawingSection, mockupSection];
+    // Generator Elements
+    const patternCanvas = document.getElementById('pattern-canvas');
+    const ptx = patternCanvas.getContext('2d');
+    const bgColorPicker = document.getElementById('bg-color-picker');
+    const generateBtn = document.getElementById('generate-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const addWallpaperBtn = document.getElementById('add-wallpaper-btn');
+    const addFriezeBtn = document.getElementById('add-frieze-btn');
+    const wallpaperLayerContainer = document.getElementById('wallpaper-layer-container');
+    const friezeLayerContainer = document.getElementById('frieze-layer-container');
+    // Drawing Elements
+    const drawingCanvas = document.getElementById('drawing-canvas');
+    const dtx = drawingCanvas.getContext('2d');
+    const backgroundCanvas = document.getElementById('background-canvas');
+    const btx = backgroundCanvas.getContext('2d');
+    const clearDrawingBtn = document.getElementById('clear-drawing-btn');
+    const symmetrySpacingControl = document.getElementById('symmetry-spacing-control');
+    const symmetrySpacingSlider = document.getElementById('symmetry-spacing-slider');
+    const symmetrySpacingVal = document.getElementById('symmetry-spacing-val');
+    const brushColorPicker = document.getElementById('brush-color-picker');
+    const brushSizeControl = document.getElementById('brush-size-control');
+    const brushSizeSlider = document.getElementById('brush-size-slider');
+    const brushSizeVal = document.getElementById('brush-size-val');
+    const fillToggle = document.getElementById('fill-toggle');
+    const radMinus = document.getElementById('rad-minus'); const radPlus = document.getElementById('rad-plus');
+    const radCount = document.getElementById('rad-count'); const radialControl = document.getElementById('radial-control');
+    const stampControl = document.getElementById('stamp-control');
+    const stampMotifSelect = document.getElementById('stamp-motif-select');
+    const stampSizeSlider = document.getElementById('stamp-size-slider');
+    const stampSizeVal = document.getElementById('stamp-size-val');
+    const downloadDrawingBtn = document.getElementById('download-drawing-btn');
+    const drawingBgColor = document.getElementById('drawing-bg-color');
+    const applyBackgroundBtn = document.getElementById('apply-background-btn');
+    const showWallpaperToggle = document.getElementById('show-wallpaper-toggle');
+    const showFriezeToggle = document.getElementById('show-frieze-toggle');
+    const wallpaperControlsDrawing = document.getElementById('wallpaper-controls-drawing');
+    const friezeControlsDrawing = document.getElementById('frieze-controls-drawing');
+    const drawingWallpaperSymmetry = document.getElementById('drawing-wallpaper-symmetry');
+    const drawingWallpaperMotif = document.getElementById('drawing-wallpaper-motif');
+    const drawingWallpaperColor = document.getElementById('drawing-wallpaper-color');
+    const drawingWallpaperSize = document.getElementById('drawing-wallpaper-size');
+    const drawingWallpaperSpacing = document.getElementById('drawing-wallpaper-spacing');
+    const dwSizeVal = document.getElementById('dw-size-val');
+    const dwSpacingVal = document.getElementById('dw-spacing-val');
+    const drawingFriezeSymmetry = document.getElementById('drawing-frieze-symmetry');
+    const drawingFriezeMotif = document.getElementById('drawing-frieze-motif');
+    const drawingFriezeColor = document.getElementById('drawing-frieze-color');
+    const drawingFriezeSize = document.getElementById('drawing-frieze-size');
+    const drawingFriezeSpacing = document.getElementById('drawing-frieze-spacing');
+    const dfSizeVal = document.getElementById('df-size-val');
+    const dfSpacingVal = document.getElementById('df-spacing-val');
+    const basicSymmetryTools = document.querySelectorAll('.basic-symmetry-tool');
+    const drawFriezeToggle = document.getElementById('draw-frieze-toggle');
+    const drawFriezeControls = document.getElementById('draw-frieze-controls');
+    const drawFriezeSelect = document.getElementById('draw-frieze-select');
+    const drawWallpaperToggle = document.getElementById('draw-wallpaper-toggle');
+    const drawWallpaperControls = document.getElementById('draw-wallpaper-controls');
+    const drawWallpaperSelect = document.getElementById('draw-wallpaper-select');
+    // Mockup Elements
+    const generateMockupBtn = document.getElementById('generate-mockup-btn');
+    const mockupPromptInput = document.getElementById('mockup-prompt');
+    const resultImage = document.getElementById('result-image');
+    const mockupLoader = document.getElementById('mockup-loader');
+    const mockupPlaceholder = document.getElementById('mockup-placeholder');
+    const errorMessage = document.getElementById('error-message');
+    const addDesignSlotBtn = document.getElementById('add-design-slot-btn');
+    const designSlotsContainer = document.getElementById('design-slots-container');
+    const downloadMockupBtn = document.getElementById('download-mockup-btn');
+    
+    // --- STATE VARIABLES ---
+    let layerIdCounter = 0;
+    let layers = [];
+    let isDrawing = false; let lastX = 0; let lastY = 0;
+    let drawingState = { 
+        basicMode: 'rad', patternMode: null, brushColor: '#1E3A8A', brushSize: 5, stampSize: 80, 
+        radSectors: 6, stampMotif: 'kawung', isFilled: true, symmetrySpacing: 150 
+    };
+    const drawingBackgroundState = {
+        wallpaper: { active: false, motif: 'kawung', symmetry: 'w_p6m', color: '#A5B4FC', size: 50, spacing: 120 },
+        frieze: { active: false, motif: 'tumpal', symmetry: 'f_p2mm', color: '#FCD34D', size: 50, spacing: 120 }
+    };
+    let designSlots = [];
+    let designSlotCounter = 0;
+
+    // --- FUNCTION DEFINITIONS ---
+
+    function resizeCanvases() {
+        if (drawingSection.classList.contains('hidden')) return;
+        const dpr = window.devicePixelRatio || 1;
+        const container = drawingCanvas.parentElement;
+        const width = container.clientWidth;
+        const height = parseInt(drawingCanvas.style.height) || container.clientHeight;
+        [drawingCanvas, backgroundCanvas].forEach(canvas => {
+            canvas.width = width * dpr; canvas.height = height * dpr;
+            canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
         });
+        dtx.scale(dpr, dpr); btx.scale(dpr, dpr);
+        applyBackground();
+    }
+    
+    function switchTab(activeTab, activeSection) {
+        allTabs.forEach(tab => tab.classList.remove('active', 'border-indigo-500'));
+        allSections.forEach(section => section.classList.add('hidden'));
+        activeTab.classList.add('active', 'border-indigo-500');
+        activeSection.classList.remove('hidden');
+        if (activeSection === drawingSection) { setTimeout(resizeCanvases, 1); }
+    }
 
-        function applyUploadedImageToFabric() {
-            if (!uploadedPatternImage) {
-                alert("Silakan upload gambar pola terlebih dahulu.");
-                return;
-            }
-            
-            previewPlaceholder.classList.add('hidden');
-            fabricTexture.classList.remove('hidden');
-            batikOverlay.classList.remove('hidden');
-            
-            const fabricKey = fabricSelector.value;
-            const fabric = fabricData[fabricKey];
-            fabricTexture.src = fabric.url;
-            batikOverlay.style.mixBlendMode = fabric.blendMode;
-            batikOverlay.style.backgroundImage = `url(${uploadedPatternImage.src})`;
-        }
-
-        uploadPatternInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    uploadedPatternImage = new Image();
-                    uploadedPatternImage.onload = () => {
-                       applyUploadedImageToFabric();
-                    }
-                    uploadedPatternImage.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+    function createLayer(type) {
+        const id = layerIdCounter++;
+        const defaultConfig = { id, type, active: true, motif: 'kawung', symmetry: type === 'wallpaper' ? 'w_p6m' : 'f_p2mm', color: `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`, size: 50, spacing: 120 };
+        layers.push(defaultConfig);
+        renderLayerControls();
+    }
+    function deleteLayer(id) { layers = layers.filter(l => l.id !== id); renderLayerControls(); }
+    function updateLayer(id, key, value) { const layer = layers.find(l => l.id === id); if (layer) { layer[key] = value; } }
+    function renderLayerControls() {
+        wallpaperLayerContainer.innerHTML = ''; friezeLayerContainer.innerHTML = '';
+        let wallpaperCounter = 0; let friezeCounter = 0;
+        layers.forEach((layer) => {
+            const card = document.createElement('div');
+            card.className = 'p-3 rounded-lg border bg-gray-50 space-y-2';
+            const isWallpaper = layer.type === 'wallpaper';
+            let labelText = isWallpaper ? `Pola Badan ${++wallpaperCounter}` : `Pola Pinggiran ${++friezeCounter}`;
+            const symmetryDropdownHTML = symmetryOptions[layer.type].map((s, index) => `<option value="${s}" ${layer.symmetry === s ? 'selected' : ''}>Pola ${index + 1}</option>`).join('');
+            card.innerHTML = `<div class="flex items-center justify-between"><span class="font-medium text-sm">${labelText}</span><div class="flex items-center space-x-2"><div class="relative inline-block w-10 align-middle select-none"><input type="checkbox" data-id="${layer.id}" data-key="active" class="layer-control toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" ${layer.active ? 'checked' : ''}/><label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div><button data-id="${layer.id}" class="delete-layer-btn text-red-500 hover:text-red-700 font-bold text-xl">&times;</button></div></div><div class="flex items-center space-x-2"><input type="color" data-id="${layer.id}" data-key="color" value="${layer.color}" class="layer-control w-1/4"><select data-id="${layer.id}" data-key="motif" class="layer-control w-3/4 p-2 border rounded-md shadow-sm text-xs">${Object.keys(motifs).map(m => `<option value="${m}" ${layer.motif === m ? 'selected' : ''}>${m.charAt(0).toUpperCase() + m.slice(1)}</option>`).join('')}</select></div><select data-id="${layer.id}" data-key="symmetry" class="layer-control w-full p-2 border rounded-md shadow-sm text-xs">${symmetryDropdownHTML}</select><div class="text-xs space-y-1 pt-1"><label>Ukuran: <span id="size-val-${layer.id}">${layer.size}</span></label><input type="range" min="10" max="150" value="${layer.size}" data-id="${layer.id}" data-key="size" class="layer-control w-full h-2 bg-gray-200 rounded-lg"><label>Kerapatan: <span id="spacing-val-${layer.id}">${layer.spacing}</span></label><input type="range" min="50" max="300" value="${layer.spacing}" data-id="${layer.id}" data-key="spacing" class="layer-control w-full h-2 bg-gray-200 rounded-lg"></div>`;
+            if (isWallpaper) { wallpaperLayerContainer.appendChild(card); } else { friezeLayerContainer.appendChild(card); }
         });
-
-        fabricSelector.addEventListener('change', applyUploadedImageToFabric);
-        
-        downloadPreviewBtn.addEventListener('click', () => {
-            if (!uploadedPatternImage) {
-                alert("Silakan upload pola dan terapkan ke kain terlebih dahulu.");
-                return;
-            }
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvasSize;
-            tempCanvas.height = canvasSize;
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            if (fabricTexture.complete && fabricTexture.naturalHeight !== 0) {
-                tempCtx.drawImage(fabricTexture, 0, 0, canvasSize, canvasSize);
-                tempCtx.globalCompositeOperation = fabricData[fabricSelector.value].blendMode;
-                tempCtx.drawImage(uploadedPatternImage, 0, 0, canvasSize, canvasSize);
-
-                const link = document.createElement('a');
-                link.download = `pratinjau_batik_${fabricSelector.value}.png`;
-                link.href = tempCanvas.toDataURL('image/png');
-                link.click();
-            } else {
-                 fabricTexture.onload = () => {
-                    tempCtx.drawImage(fabricTexture, 0, 0, canvasSize, canvasSize);
-                    tempCtx.globalCompositeOperation = fabricData[fabricSelector.value].blendMode;
-                    tempCtx.drawImage(uploadedPatternImage, 0, 0, canvasSize, canvasSize);
-
-                    const link = document.createElement('a');
-                    link.download = `pratinjau_batik_${fabricSelector.value}.png`;
-                    link.href = tempCanvas.toDataURL('image/png');
-                    link.click();
-                };
-            }
+    }
+    function renderLayers(targetCtx, width, height, layersToRender, bgColor = null) {
+        if(bgColor) { targetCtx.fillStyle = bgColor; targetCtx.fillRect(0, 0, width, height); }
+        const activeFriezeLayers = layersToRender.filter(l => l.type === 'frieze' && l.active);
+        const activeWallpaperLayers = layersToRender.filter(l => l.type === 'wallpaper' && l.active);
+        let borderHeight = 0; if (activeFriezeLayers.length > 0) { const maxFriezeSpacing = Math.max(...activeFriezeLayers.map(l => l.spacing)); borderHeight = Math.max(maxFriezeSpacing / 2, 60); }
+        activeFriezeLayers.forEach(layer => {
+            targetCtx.fillStyle = layer.color; const path = motifs[layer.motif]; const layerState = { motifSize: layer.size / 100, spacing: layer.spacing };
+            const transformsTop = calculateFriezeTransforms(layerState, width, height, borderHeight / 2, layer.symmetry);
+            const transformsBottom = calculateFriezeTransforms(layerState, width, height, height - (borderHeight / 2), layer.symmetry);
+            [...transformsTop, ...transformsBottom].forEach(transformList => {
+                targetCtx.save();
+                transformList.forEach(tf => { if (tf.t === 'tr') targetCtx.translate(tf.x, tf.y); else if (tf.t === 'ro') targetCtx.rotate(tf.a * Math.PI / 180); else if (tf.t === 'sc') targetCtx.scale(tf.x, tf.y); });
+                targetCtx.fill(path); targetCtx.restore();
+            });
         });
-
-        function resetPreview() {
-            previewPlaceholder.classList.remove('hidden');
-            fabricTexture.classList.add('hidden');
-            batikOverlay.classList.add('hidden');
-            fabricTexture.src = '';
-            batikOverlay.style.backgroundImage = 'none';
-            uploadedPatternImage = null;
-            uploadPatternInput.value = ''; // Reset file input
-        }
-
-        // --- DYNAMIC COLOR PALETTE LOGIC ---
-        let colorsRgb = [];
-        let colorsHex = ["#4a2c2a", "#f4e9d8", "#c2a661", "#7b5a43", "#3b1e17"]; // Default palette
-        const colorPaletteContainer = document.getElementById('color-palette-container');
-
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [0, 0, 0];
-        }
-
-        function updateColorsFromHex() {
-            colorsRgb = colorsHex.map(hex => hexToRgb(hex));
-            if(grid) drawBatik();
-        }
-
-        function renderColorPalette() {
-            colorPaletteContainer.innerHTML = '';
-            colorsHex.forEach((hex, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'relative color-picker-wrapper';
-
-                const colorInput = document.createElement('input');
-                colorInput.type = 'color';
-                colorInput.value = hex;
-                colorInput.addEventListener('input', (e) => {
-                    colorsHex[index] = e.target.value;
-                    updateColorsFromHex();
+        if (activeWallpaperLayers.length > 0) {
+            targetCtx.save(); targetCtx.beginPath(); targetCtx.rect(0, borderHeight, width, height - borderHeight * 2); targetCtx.clip();
+            activeWallpaperLayers.forEach(layer => {
+                targetCtx.fillStyle = layer.color; const path = motifs[layer.motif]; const layerState = { motifSize: layer.size / 100, spacing: layer.spacing };
+                const transforms = calculateWallpaperTransforms(layerState, width, height, layer.symmetry);
+                 transforms.forEach(transformList => {
+                    targetCtx.save();
+                    transformList.forEach(tf => { if (tf.t === 'tr') targetCtx.translate(tf.x, tf.y); else if (tf.t === 'ro') targetCtx.rotate(tf.a * Math.PI / 180); else if (tf.t === 'sc') targetCtx.scale(tf.x, tf.y); });
+                    targetCtx.fill(path); targetCtx.restore();
                 });
-
-                const removeBtn = document.createElement('button');
-                removeBtn.textContent = '×';
-                removeBtn.className = 'absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold';
-                removeBtn.onclick = () => {
-                    colorsHex.splice(index, 1);
-                    renderColorPalette();
-                    updateColorsFromHex();
-                };
-                wrapper.appendChild(colorInput);
-                if (colorsHex.length > 2) { // Minimum 2 colors
-                    wrapper.appendChild(removeBtn);
-                }
-                colorPaletteContainer.appendChild(wrapper);
+            }); targetCtx.restore();
+        }
+    }
+    function calculateFriezeTransforms(layerState, width, height, y_center, symmetry) {
+        const commands = []; const { motifSize, spacing } = layerState; const addCmd = (transformations) => commands.push(transformations); const h_spacing = spacing;
+        for (let x = -h_spacing; x < width + h_spacing; x += h_spacing) {
+            switch(symmetry) {
+                case 'f_p1': addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:motifSize}]); break;
+                case 'f_p2': addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+h_spacing/2,y:y_center},{t:'ro',a:180},{t:'sc',x:motifSize,y:motifSize}]); break;
+                case 'f_p1m1': addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:-motifSize,y:motifSize}]); break;
+                case 'f_p11m': addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:-motifSize}]); break;
+                case 'f_p11g': addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+h_spacing/2,y:y_center},{t:'sc',x:motifSize,y:-motifSize}]); break;
+                case 'f_p2mg': addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+h_spacing/2,y:y_center},{t:'ro',a:180},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:-motifSize}]); addCmd([{t:'tr',x:x+h_spacing/2,y:y_center},{t:'ro',a:180},{t:'sc',x:motifSize,y:-motifSize}]); break;
+                case 'f_p2mm': addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:-motifSize,y:motifSize}]); addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:motifSize,y:-motifSize}]); addCmd([{t:'tr',x:x,y:y_center},{t:'sc',x:-motifSize,y:-motifSize}]); break;
+            }
+        } return commands;
+    }
+    function calculateWallpaperTransforms(layerState, width, height, symmetry) {
+        const commands = []; const { motifSize, spacing } = layerState; const addCmd = (transformations) => commands.push(transformations); const sx = spacing; const sy = spacing; const hx = Math.sqrt(3) * sx / 2;
+        for (let r = -2; r * sy < height + sy*2; r++) { for (let c = -2; c * sx < width + sx*2; c++) { let x, y;
+            switch(symmetry) {
+                case 'w_p1': x = c*sx + r*sx*0.2; y = r*sy; addCmd([{t:'tr',x,y},{t:'sc',x:motifSize,y:motifSize}]); break;
+                case 'w_p2': x=c*sx; y=r*sy; addCmd([{t:'tr',x,y},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+sx/2,y},{t:'ro',a:180},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y:y+sy/2},{t:'ro',a:180},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+sx/2,y:y+sy/2},{t:'ro',a:180},{t:'sc',x:motifSize,y:motifSize}]); break;
+                case 'w_pm': x=c*sx; y=r*sy; addCmd([{t:'tr',x,y},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y},{t:'sc',x:-motifSize,y:motifSize}]); break;
+                case 'w_pg': x=c*sx; y=r*sy; addCmd([{t:'tr',x,y},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y:y+sy/2},{t:'sc',x:-motifSize,y:motifSize}]); break;
+                case 'w_cm': x=c*sx+(r%2)*(sx/2); y=r*sy/2; addCmd([{t:'tr',x,y},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y},{t:'sc',x:-motifSize,y:motifSize}]); break;
+                case 'w_pmm': x=c*sx; y=r*sy; [0,1].forEach(i=>[0,1].forEach(j=>addCmd([{t:'tr',x,y},{t:'sc',x:motifSize*(i?-1:1),y:motifSize*(j?-1:1)}]))); break;
+                case 'w_pmg': x=c*sx; y=r*sy; addCmd([{t:'tr',x,y},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y},{t:'sc',x:-motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+sx/2,y:y+sy/2},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+sx/2,y:y+sy/2},{t:'sc',x:-motifSize,y:motifSize}]); break;
+                case 'w_pgg': x=c*sx; y=r*sy; addCmd([{t:'tr',x,y},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x:x+sx/2,y:y+sy/2},{t:'ro',a:180},{t:'sc',x:motifSize,y:motifSize}]); break;
+                case 'w_cmm': x=c*sx+(r%2)*(sx/2); y=r*sy/2; [0,1].forEach(i=>[0,1].forEach(j=>addCmd([{t:'tr',x,y},{t:'sc',x:motifSize*(i?-1:1),y:motifSize*(j?-1:1)}]))); break;
+                case 'w_p4': x=c*sx; y=r*sy; [0,90,180,270].forEach(a=>addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}])); break;
+                case 'w_p4m': x=c*sx; y=r*sy; [0,90,180,270].forEach(a=>{addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:-motifSize,y:motifSize}]);}); break;
+                case 'w_p4g': x=c*sx; y=r*sy; [0,90,180,270].forEach(a=>addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}])); [0,90,180,270].forEach(a=>addCmd([{t:'tr',x:x+sx/2,y:y+sy/2},{t:'ro',a},{t:'sc',x:-motifSize,y:motifSize}])); break;
+                case 'w_p3': x=c*sx+(r%2)*sx/2; y=r*hx; [0,120,240].forEach(a=>addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}])); break;
+                case 'w_p3m1': x=c*sx+(r%2)*sx/2; y=r*hx; [0,120,240].forEach(a=>{addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:-motifSize,y:motifSize}]);}); break;
+                case 'w_p31m': x=c*sx+(r%2)*sx/2; y=r*hx; [0,120,240].forEach(a=>addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}])); [0,120,240].forEach(a=>addCmd([{t:'tr',x,y},{t:'ro',a:a+60},{t:'sc',x:-motifSize,y:motifSize}])); break;
+                case 'w_p6': x=c*sx+(r%2)*sx/2; y=r*hx; [0,60,120,180,240,300].forEach(a=>addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}])); break;
+                case 'w_p6m': x=c*sx+(r%2)*sx/2; y=r*hx; [0,60,120,180,240,300].forEach(a=>{addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:motifSize,y:motifSize}]); addCmd([{t:'tr',x,y},{t:'ro',a},{t:'sc',x:-motifSize,y:motifSize}]);}); break;
+            }
+        }} return commands;
+    }
+    function handleGenerateClick() {
+        const dpr = window.devicePixelRatio || 1; const container = patternCanvas.parentElement;
+        patternCanvas.width = container.clientWidth * dpr; patternCanvas.height = (parseInt(patternCanvas.style.height) || container.clientHeight) * dpr;
+        ptx.scale(dpr, dpr); const width = container.clientWidth; const height = parseInt(patternCanvas.style.height) || container.clientHeight;
+        renderLayers(ptx, width, height, layers, bgColorPicker.value);
+    }
+    function populatePatternSelectors() {
+        symmetryOptions.frieze.forEach((s, i) => drawFriezeSelect.add(new Option(`Pola Pinggiran ${i + 1}`, s)));
+        symmetryOptions.wallpaper.forEach((s, i) => drawWallpaperSelect.add(new Option(`Pola Badan ${i + 1}`, s)));
+    }
+    function populateDrawingControls() {
+        Object.keys(motifs).forEach(m => {
+            const capName = m.charAt(0).toUpperCase() + m.slice(1);
+            drawingWallpaperMotif.add(new Option(capName, m));
+            drawingFriezeMotif.add(new Option(capName, m));
+            const stampOption = document.createElement('option'); 
+            stampOption.value = m; stampOption.textContent = capName; stampMotifSelect.appendChild(stampOption);
+        });
+        stampMotifSelect.value = drawingState.stampMotif;
+        drawingWallpaperMotif.value = drawingBackgroundState.wallpaper.motif;
+        drawingFriezeMotif.value = drawingBackgroundState.frieze.motif;
+        symmetryOptions.wallpaper.forEach((s, i) => drawingWallpaperSymmetry.add(new Option(`Pola Badan ${i + 1}`, s)));
+        drawingWallpaperSymmetry.value = drawingBackgroundState.wallpaper.symmetry;
+        symmetryOptions.frieze.forEach((s, i) => drawingFriezeSymmetry.add(new Option(`Pola Pinggiran ${i + 1}`, s)));
+        drawingFriezeSymmetry.value = drawingBackgroundState.frieze.symmetry;
+        [drawingWallpaperMotif, drawingWallpaperSymmetry, drawingFriezeMotif, drawingFriezeSymmetry].forEach(el => el.className = "w-full p-2 border rounded-md shadow-sm text-xs bg-white");
+        [drawingWallpaperSize, drawingWallpaperSpacing, drawingFriezeSize, drawingFriezeSpacing].forEach(el => el.className = "w-full h-2 bg-gray-200 rounded-lg");
+    }
+    function applyBackground() {
+        const w = backgroundCanvas.width / (window.devicePixelRatio || 1); const h = backgroundCanvas.height / (window.devicePixelRatio || 1);
+        btx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+        let layersToDraw = [];
+        if (drawingBackgroundState.wallpaper.active) { layersToDraw.push({ type: 'wallpaper', active: true, ...drawingBackgroundState.wallpaper }); }
+        if (drawingBackgroundState.frieze.active) { layersToDraw.push({ type: 'frieze', active: true, ...drawingBackgroundState.frieze }); }
+        renderLayers(btx, w, h, layersToDraw, drawingBgColor.value);
+    }
+    function clearDrawing() { dtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height); }
+    function getMousePos(e) {
+        const rect = drawingCanvas.getBoundingClientRect();
+        const scaleX = drawingCanvas.width / (rect.width * (window.devicePixelRatio || 1)); const scaleY = drawingCanvas.height / (rect.height * (window.devicePixelRatio || 1));
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+    function drawLine(x, y, fromX, fromY) {
+        dtx.lineCap = 'round'; dtx.lineJoin = 'round';
+        dtx.strokeStyle = drawingState.brushColor; dtx.lineWidth = drawingState.brushSize;
+        dtx.beginPath(); dtx.moveTo(fromX, fromY); dtx.lineTo(x, y); dtx.stroke();
+    }
+    function stampMotif(x,y) {
+        const path = motifs[drawingState.stampMotif]; const size = drawingState.stampSize / 100.0;
+        dtx.fillStyle = drawingState.brushColor; dtx.strokeStyle = drawingState.brushColor; dtx.lineWidth = 2;
+        dtx.save(); dtx.translate(x, y); dtx.scale(size, size);
+        if (drawingState.isFilled) dtx.fill(path); else dtx.stroke(path);
+        dtx.restore();
+    }
+    function applySymmetry(x, y, fromX, fromY, actionFn) {
+        const { basicMode, patternMode, symmetrySpacing, radSectors } = drawingState;
+        const [w, h] = [drawingCanvas.width / (window.devicePixelRatio || 1), drawingCanvas.height / (window.devicePixelRatio || 1)];
+        let patternTransforms = [[]]; // Start with one identity transform
+        if (patternMode) {
+            const layerState = { motifSize: 1, spacing: symmetrySpacing };
+            if (patternMode.startsWith('f_')) { patternTransforms = calculateFriezeTransforms(layerState, w, h, h / 2, patternMode); } 
+            else if (patternMode.startsWith('w_')) { patternTransforms = calculateWallpaperTransforms(layerState, w, h, patternMode); }
+        }
+        patternTransforms.forEach(transformList => {
+            dtx.save();
+            transformList.forEach(tf => {
+                if (tf.t === 'tr') dtx.translate(tf.x, tf.y);
+                else if (tf.t === 'ro') dtx.rotate(tf.a * Math.PI / 180);
+                else if (tf.t === 'sc') dtx.scale(tf.x, tf.y);
             });
+            switch (basicMode) {
+                case 'free': actionFn(x, y, fromX, fromY); break;
+                case 'ver': actionFn(x, y, fromX, fromY); actionFn(w - x, y, w - fromX, fromY); break;
+                case 'hor': actionFn(x, y, fromX, fromY); actionFn(x, h - y, fromX, h - fromY); break;
+                case 'quad': actionFn(x, y, fromX, fromY); actionFn(w - x, y, w - fromX, fromY); actionFn(x, h - y, fromX, h - fromY); actionFn(w - x, h - y, w - fromX, h - fromY); break;
+                case 'rad': case 'stamp': {
+                    const [cx, cy] = [w/2, h/2]; const angle = (Math.PI * 2) / radSectors;
+                    for (let i = 0; i < radSectors; i++) {
+                        dtx.save(); dtx.translate(cx, cy); dtx.rotate(angle * i); dtx.translate(-cx, -cy);
+                        if (basicMode === 'stamp') stampMotif(x,y); else actionFn(x, y, fromX, fromY);
+                        dtx.restore();
+                    } break;
+                }
+            }
+            dtx.restore();
+        });
+    }
+    function handleDraw(e) {
+        if (!isDrawing) return; e.preventDefault();
+        const { x, y } = getMousePos(e);
+        applySymmetry(x, y, lastX, lastY, drawLine);
+        [lastX, lastY] = [x, y];
+    }
+    function handleStart(e) {
+        e.preventDefault();
+        const { x, y } = getMousePos(e);
+        if (drawingState.basicMode === 'stamp') { applySymmetry(x, y, 0, 0, null); } 
+        else { isDrawing = true; [lastX, lastY] = [x, y]; applySymmetry(x, y, x, y, drawLine); }
+    }
+    function updateSymmetryModeUI() {
+        const { basicMode, patternMode } = drawingState;
+        const isStamp = basicMode === 'stamp'; const isRad = basicMode === 'rad';
+        radialControl.style.display = (isRad || isStamp) ? 'block' : 'none';
+        stampControl.style.display = isStamp ? 'block' : 'none';
+        brushSizeControl.style.display = isStamp ? 'none' : 'block';
+        symmetrySpacingControl.style.display = patternMode ? 'block' : 'none';
+    }
 
-            const addBtn = document.createElement('button');
-            addBtn.textContent = '+';
-            addBtn.className = 'w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center text-2xl font-bold';
-            addBtn.onclick = () => {
-                colorsHex.push('#ffffff');
-                renderColorPalette();
-                updateColorsFromHex();
+    function createNewDesignSlot() {
+        const slotId = designSlotCounter++;
+        const slotData = { id: slotId, base64: null, description: '', mimeType: '' };
+        designSlots.push(slotData);
+
+        const slotWrapper = document.createElement('div');
+        slotWrapper.id = `design-slot-${slotId}`;
+        slotWrapper.className = 'p-3 border rounded-lg bg-gray-50 space-y-2';
+
+        const fileInputId = `design-upload-${slotId}`;
+        slotWrapper.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <img id="preview-${slotId}" src="" class="hidden h-12 w-12 rounded object-cover bg-gray-200">
+                <div class="flex-grow">
+                    <label for="${fileInputId}" class="text-xs font-medium text-gray-700 cursor-pointer">Desain ${slotId + 1}</label>
+                    <input type="file" id="${fileInputId}" class="hidden" accept="image/png, image/jpeg">
+                    <input type="text" id="desc-${slotId}" placeholder="Bagian (cth: Kemeja depan)" class="mt-1 w-full p-1.5 border border-gray-300 rounded-md text-xs">
+                </div>
+                <button data-id="${slotId}" class="remove-slot-btn text-red-500 hover:text-red-700 font-bold text-xl">&times;</button>
+            </div>
+        `;
+
+        designSlotsContainer.appendChild(slotWrapper);
+
+        document.getElementById(fileInputId).addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (re) => {
+                const imageUrl = re.target.result;
+                slotData.base64 = imageUrl.split(',')[1];
+                slotData.mimeType = file.type;
+                document.getElementById(`preview-${slotId}`).src = imageUrl;
+                document.getElementById(`preview-${slotId}`).classList.remove('hidden');
             };
-            colorPaletteContainer.appendChild(addBtn);
-        }
-
-        // --- BATIK SIMULATION LOGIC ---
-        const presets = [
-            { name: "Mitosis (Default)", p: {Du: 0.16, Dv: 0.08, F: 0.060, k: 0.062} },
-            { name: "Koral", p: {Du: 0.14, Dv: 0.06, F: 0.035, k: 0.065} },
-            { name: "Jaring Laba-laba", p: {Du: 0.19, Dv: 0.05, F: 0.060, k: 0.062} },
-            { name: "Bintik & Lingkaran", p: {Du: 0.16, Dv: 0.08, F: 0.020, k: 0.055} },
-            { name: "Sel Ikan Zebra", p: {Du: 0.12, Dv: 0.08, F: 0.020, k: 0.050} },
-            { name: "Labirin", p: {Du: 0.1, Dv: 0.05, F: 0.014, k: 0.054} }
-        ];
-        const presetSelector = document.getElementById('presetSelector');
-        presets.forEach((preset, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = preset.name;
-            presetSelector.appendChild(option);
-        });
-        
-        let nextGrid;
-        function initializeGrid() { /* ... unchanged ... */ 
-            grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null).map(() => ({ u: 1, v: 0 })));
-            nextGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null).map(() => ({ u: 1, v: 0 })));
-            const seedSize = 10;
-            const center = Math.floor(gridSize / 2);
-            for (let i = center - seedSize; i < center + seedSize; i++) {
-                for (let j = center - seedSize; j < center + seedSize; j++) {
-                    if (i > 0 && i < gridSize && j > 0 && j < gridSize) {
-                        grid[i][j].v = 0.5 + Math.random() * 0.2;
-                        grid[i][j].u = 0.25 + Math.random() * 0.1;
-                    }
-                }
-            }
-        }
-        function laplacian(x, y, chemical) { /* ... unchanged ... */
-            let sum = 0;
-            sum += grid[x][y][chemical] * -1; sum += grid[x - 1][y][chemical] * 0.2; sum += grid[x + 1][y][chemical] * 0.2; sum += grid[x][y + 1][chemical] * 0.2; sum += grid[x][y - 1][chemical] * 0.2;
-            sum += grid[x - 1][y - 1][chemical] * 0.05; sum += grid[x + 1][y - 1][chemical] * 0.05; sum += grid[x - 1][y + 1][chemical] * 0.05; sum += grid[x + 1][y + 1][chemical] * 0.05;
-            return sum;
-        }
-        function updateBatik() { /* ... unchanged ... */
-            for (let i = 1; i < gridSize - 1; i++) {
-                for (let j = 1; j < gridSize - 1; j++) {
-                    const { u, v } = grid[i][j]; const reaction = u * v * v;
-                    const laplaceU = laplacian(i, j, 'u'); const laplaceV = laplacian(i, j, 'v');
-                    const newU = u + (p.Du * laplaceU - reaction + p.F * (1 - u));
-                    const newV = v + (p.Dv * laplaceV + reaction - (p.k + p.F) * v);
-                    nextGrid[i][j].u = Math.max(0, Math.min(1, newU));
-                    nextGrid[i][j].v = Math.max(0, Math.min(1, newV));
-                }
-            }
-            [grid, nextGrid] = [nextGrid, grid];
-        }
-
-        function drawBatik() {
-            if (!grid || !colorsRgb.length) return;
-            // ... (rest of the drawing logic is unchanged) ...
-            const imageData = batikCtx.createImageData(canvasSize, canvasSize);
-            const data = imageData.data;
-            const rad = p.rotation * (Math.PI / 180), cosR = Math.cos(rad), sinR = Math.sin(rad);
-            const a = p.scale * cosR, b = -sinR + p.shearX, c = sinR + p.shearY, d = p.scale * cosR;
-            const det = a * d - b * c;
-            if (Math.abs(det) < 1e-9) return;
-            const invA = d / det, invB = -b / det, invC = -c / det, invD = a / det;
-            const centerOffset = gridSize / 2;
-            for (let x = 0; x < canvasSize; x++) {
-                for (let y = 0; y < canvasSize; y++) {
-                    const canvasX = x - canvasSize / 2, canvasY = y - canvasSize / 2;
-                    let gridX = invA * canvasX + invB * canvasY + centerOffset;
-                    let gridY = invC * canvasX + invD * canvasY + centerOffset;
-                    gridX = (gridX % gridSize + gridSize) % gridSize;
-                    gridY = (gridY % gridSize + gridSize) % gridSize;
-                    const ix = Math.floor(gridX), iy = Math.floor(gridY);
-                    const value = grid[ix][iy].v;
-                    const colorIndex = Math.floor(value * (colorsRgb.length));
-                    const color = colorsRgb[Math.min(colorsRgb.length - 1, colorIndex)];
-                    const pixelIndex = (y * canvasSize + x) * 4;
-                    data[pixelIndex] = color[0]; data[pixelIndex + 1] = color[1]; data[pixelIndex + 2] = color[2]; data[pixelIndex + 3] = 255;
-                }
-            }
-            batikCtx.putImageData(imageData, 0, 0);
-        }
-        
-        function startGeneration() {
-            generateBtn.disabled = true; generateBtn.textContent = "Generating...";
-            setTimeout(() => {
-                initializeGrid();
-                for (let i = 0; i < p.simulationSteps; i++) { updateBatik(); }
-                drawBatik();
-                generateBtn.disabled = false; generateBtn.textContent = "Generate Pola";
-            }, 10);
-        }
-
-        // --- BATIK GENERATOR UI & EVENT LISTENERS ---
-        const inputs = ['Du', 'Dv', 'F', 'k', 'rotation', 'scale', 'shearX', 'shearY', 'simulationSteps'];
-        function updateAllSliders() { /* ... unchanged ... */
-            inputs.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.value = p[id]; el.dispatchEvent(new Event('input')); }
-            });
-        }
-        inputs.forEach(id => { /* ... unchanged ... */
-            const el = document.getElementById(id); const valEl = document.getElementById(`${id}Value`);
-            el.addEventListener('input', (e) => {
-                p[id] = parseFloat(e.target.value);
-                let suffix = id === 'rotation' ? '°' : '';
-                let decimals = id.length === 1 ? 3 : (id === 'scale' || id.startsWith('shear') ? 2 : 0);
-                if (id === 'scale') decimals = 1;
-                valEl.textContent = parseFloat(e.target.value).toFixed(decimals) + suffix;
-            });
-        });
-        
-        const generateBtn = document.getElementById('generateBtn');
-        const randomizeBtn = document.getElementById('randomizeBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const resetBtn = document.getElementById('resetBtn');
-
-        function randomizeParameters() { /* ... unchanged ... */
-            const randomPresetIndex = Math.floor(Math.random() * presets.length);
-            presetSelector.value = randomPresetIndex; const randomPreset = presets[randomPresetIndex];
-            p.Du = randomPreset.p.Du; p.Dv = randomPreset.p.Dv; p.F = randomPreset.p.F; p.k = randomPreset.p.k;
-            p.rotation = Math.floor(Math.random() * 360);
-            p.scale = parseFloat((0.5 + Math.random() * 2.5).toFixed(2));
-            p.shearX = parseFloat((-0.5 + Math.random()).toFixed(2));
-            p.shearY = parseFloat((-0.5 + Math.random()).toFixed(2));
-            p.simulationSteps = 1000 + Math.floor(Math.random() * 5000);
-            updateAllSliders();
-            startGeneration();
-        }
-
-        generateBtn.addEventListener('click', startGeneration);
-        randomizeBtn.addEventListener('click', randomizeParameters);
-        downloadBtn.addEventListener('click', () => { /* ... unchanged ... */
-            const link = document.createElement('a');
-            link.download = 'batik_generatif.png';
-            link.href = batikCanvas.toDataURL('image/png');
-            link.click();
-        });
-        resetBtn.addEventListener('click', () => {
-              presetSelector.value = 0;
-              p = { Du: 0.16, Dv: 0.08, F: 0.06, k: 0.062, rotation: 45, scale: 1.0, shearX: 0.0, shearY: 0.0, simulationSteps: 3000 };
-              colorsHex = ["#4a2c2a", "#f4e9d8", "#c2a661", "#7b5a43", "#3b1e17"]; // Reset colors
-              renderColorPalette();
-              updateColorsFromHex();
-              updateAllSliders();
-              resetPreview();
-              startGeneration();
-        });
-         presetSelector.addEventListener('change', (e) => {
-            const selectedPreset = presets[e.target.value];
-            p.Du = selectedPreset.p.Du; p.Dv = selectedPreset.p.Dv; p.F = selectedPreset.p.F; p.k = selectedPreset.p.k;
-            updateAllSliders();
-            startGeneration();
+            reader.readAsDataURL(file);
         });
 
-        // --- DRAWING CANVAS SETUP & LOGIC (UNCHANGED) ---
-        const drawingCanvas = document.getElementById('drawingCanvas');
-        const drawingCtx = drawingCanvas.getContext('2d');
-        drawingCanvas.width = canvasSize * 1.5;
-        drawingCanvas.height = canvasSize * 1.5;
-        const brushColor = document.getElementById('brushColor');
-        const brushSize = document.getElementById('brushSize');
-        const brushSizeValue = document.getElementById('brushSizeValue');
-        const eraserBtn = document.getElementById('eraserBtn');
-        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
-        const downloadDrawingBtn = document.getElementById('downloadDrawingBtn');
-        let isDrawing = false, lastX = 0, lastY = 0, isEraser = false, currentColor = '#000000';
-        drawingCtx.fillStyle = "#f1f5f9";
-        drawingCtx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-        function drawOnCanvas(e) { if (!isDrawing) return; e.preventDefault(); const rect = drawingCanvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; drawingCtx.beginPath(); drawingCtx.moveTo(lastX, lastY); drawingCtx.lineTo(x, y); drawingCtx.stroke(); [lastX, lastY] = [x, y]; }
-        drawingCanvas.addEventListener('mousedown', (e) => { isDrawing = true; const rect = drawingCanvas.getBoundingClientRect(); [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top]; });
-        drawingCanvas.addEventListener('touchstart', (e) => { isDrawing = true; const rect = drawingCanvas.getBoundingClientRect(); [lastX, lastY] = [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top]; });
-        drawingCanvas.addEventListener('mousemove', drawOnCanvas);
-        drawingCanvas.addEventListener('touchmove', drawOnCanvas);
-        drawingCanvas.addEventListener('mouseup', () => isDrawing = false);
-        drawingCanvas.addEventListener('mouseout', () => isDrawing = false);
-        drawingCanvas.addEventListener('touchend', () => isDrawing = false);
-        brushColor.addEventListener('input', (e) => { isEraser = false; eraserBtn.classList.remove('bg-blue-500'); currentColor = e.target.value; drawingCtx.strokeStyle = currentColor; });
-        brushSize.addEventListener('input', (e) => { drawingCtx.lineWidth = e.target.value; brushSizeValue.textContent = e.target.value; });
-        eraserBtn.addEventListener('click', () => { isEraser = !isEraser; if (isEraser) { drawingCtx.strokeStyle = drawingCtx.fillStyle; eraserBtn.classList.add('bg-blue-500'); } else { drawingCtx.strokeStyle = currentColor; eraserBtn.classList.remove('bg-blue-500'); } });
-        clearCanvasBtn.addEventListener('click', () => { drawingCtx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height); });
-        downloadDrawingBtn.addEventListener('click', () => { const link = document.createElement('a'); link.download = 'desain_kustom.png'; link.href = drawingCanvas.toDataURL('image/png'); link.click(); });
-        
-        // --- INITIALIZATION ---
-        function init() {
-            renderColorPalette();
-            updateColorsFromHex();
-            drawingCtx.lineWidth = brushSize.value;
-            drawingCtx.lineCap = 'round';
-            drawingCtx.strokeStyle = brushColor.value;
-            resetPreview();
-            randomizeParameters();
-        }
+        document.getElementById(`desc-${slotId}`).addEventListener('input', (e) => {
+            slotData.description = e.target.value;
+        });
 
-        init();
+        slotWrapper.querySelector('.remove-slot-btn').addEventListener('click', (e) => {
+            const idToRemove = parseInt(e.target.dataset.id);
+            designSlots = designSlots.filter(s => s.id !== idToRemove);
+            document.getElementById(`design-slot-${idToRemove}`).remove();
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    tabGenerator.addEventListener('click', () => switchTab(tabGenerator, generatorSection));
+    tabDrawing.addEventListener('click', () => switchTab(tabDrawing, drawingSection));
+    tabMockup.addEventListener('click', () => switchTab(tabMockup, mockupSection));
+    
+    const eventHandler = (e) => {
+        const target = e.target;
+        if (target.classList.contains('delete-layer-btn')) { deleteLayer(parseInt(target.dataset.id)); } 
+        else if (target.classList.contains('layer-control')) {
+            const id = parseInt(target.dataset.id); const key = target.dataset.key;
+            let value = target.type === 'checkbox' ? target.checked : target.value;
+            if (target.type === 'range') { value = parseInt(value); document.getElementById(`${key}-val-${id}`).textContent = value; }
+            updateLayer(id, key, value);
+        }
+    };
+    wallpaperLayerContainer.addEventListener('click', eventHandler); friezeLayerContainer.addEventListener('click', eventHandler);
+    wallpaperLayerContainer.addEventListener('change', eventHandler); friezeLayerContainer.addEventListener('change', eventHandler);
+    wallpaperLayerContainer.addEventListener('input', eventHandler); friezeLayerContainer.addEventListener('input', eventHandler);
+    addWallpaperBtn.addEventListener('click', () => createLayer('wallpaper')); addFriezeBtn.addEventListener('click', () => createLayer('frieze'));
+    generateBtn.addEventListener('click', handleGenerateClick);
+    downloadBtn.addEventListener('click', () => { const link = document.createElement('a'); link.download = `komposisi_batik.png`; link.href = patternCanvas.toDataURL('image/png'); link.click(); });
+
+    drawingCanvas.addEventListener('mousedown', handleStart);
+    drawingCanvas.addEventListener('mousemove', handleDraw);
+    drawingCanvas.addEventListener('mouseup', () => isDrawing = false);
+    drawingCanvas.addEventListener('mouseout', () => isDrawing = false);
+    drawingCanvas.addEventListener('touchstart', handleStart, { passive: false });
+    drawingCanvas.addEventListener('touchmove', handleDraw, { passive: false });
+    drawingCanvas.addEventListener('touchend', () => isDrawing = false);
+    basicSymmetryTools.forEach(tool => {
+        tool.addEventListener('click', () => {
+            basicSymmetryTools.forEach(t => t.classList.remove('active'));
+            tool.classList.add('active');
+            drawingState.basicMode = tool.dataset.mode;
+            updateSymmetryModeUI();
+        });
     });
-    </script>
+    drawFriezeToggle.addEventListener('change', (e) => {
+        drawFriezeControls.classList.toggle('hidden', !e.target.checked);
+        if (e.target.checked) {
+            if (drawWallpaperToggle.checked) { drawWallpaperToggle.checked = false; drawWallpaperControls.classList.add('hidden'); }
+            drawingState.patternMode = drawFriezeSelect.value;
+        } else { if (!drawWallpaperToggle.checked) drawingState.patternMode = null; }
+        updateSymmetryModeUI();
+    });
+    drawWallpaperToggle.addEventListener('change', (e) => {
+        drawWallpaperControls.classList.toggle('hidden', !e.target.checked);
+        if (e.target.checked) {
+            if (drawFriezeToggle.checked) { drawFriezeToggle.checked = false; drawFriezeControls.classList.add('hidden'); }
+            drawingState.patternMode = drawWallpaperSelect.value;
+        } else { if (!drawFriezeToggle.checked) drawingState.patternMode = null; }
+        updateSymmetryModeUI();
+    });
+    drawFriezeSelect.addEventListener('change', (e) => { if(drawFriezeToggle.checked) drawingState.patternMode = e.target.value; });
+    drawWallpaperSelect.addEventListener('change', (e) => { if(drawWallpaperToggle.checked) drawingState.patternMode = e.target.value; });
+    symmetrySpacingSlider.addEventListener('input', (e) => { drawingState.symmetrySpacing = parseInt(e.target.value); symmetrySpacingVal.textContent = e.target.value; });
+    fillToggle.addEventListener('click', () => {
+        drawingState.isFilled = !drawingState.isFilled;
+        fillToggle.classList.toggle('active');
+        fillToggle.textContent = drawingState.isFilled ? 'Mode Isi (Fill On)' : 'Mode Garis (Fill Off)';
+    });
+    brushColorPicker.addEventListener('input', (e) => drawingState.brushColor = e.target.value);
+    brushSizeSlider.addEventListener('input', (e) => { drawingState.brushSize = e.target.value; brushSizeVal.textContent = e.target.value; });
+    stampSizeSlider.addEventListener('input', (e) => { drawingState.stampSize = e.target.value; stampSizeVal.textContent = e.target.value; });
+    radMinus.addEventListener('click', () => { if(drawingState.radSectors > 2) { drawingState.radSectors--; radCount.textContent = drawingState.radSectors; } });
+    radPlus.addEventListener('click', () => { if(drawingState.radSectors < 20) { drawingState.radSectors++; radCount.textContent = drawingState.radSectors; } });
+    stampMotifSelect.addEventListener('change', (e) => drawingState.stampMotif = e.target.value);
+    showWallpaperToggle.addEventListener('change', (e) => { drawingBackgroundState.wallpaper.active = e.target.checked; wallpaperControlsDrawing.classList.toggle('hidden', !e.target.checked); });
+    showFriezeToggle.addEventListener('change', (e) => { drawingBackgroundState.frieze.active = e.target.checked; friezeControlsDrawing.classList.toggle('hidden', !e.target.checked); });
+    drawingWallpaperMotif.addEventListener('change', e => drawingBackgroundState.wallpaper.motif = e.target.value);
+    drawingWallpaperColor.addEventListener('input', e => drawingBackgroundState.wallpaper.color = e.target.value);
+    drawingWallpaperSymmetry.addEventListener('change', e => drawingBackgroundState.wallpaper.symmetry = e.target.value);
+    drawingWallpaperSize.addEventListener('input', e => { drawingBackgroundState.wallpaper.size = parseInt(e.target.value); dwSizeVal.textContent = e.target.value; });
+    drawingWallpaperSpacing.addEventListener('input', e => { drawingBackgroundState.wallpaper.spacing = parseInt(e.target.value); dwSpacingVal.textContent = e.target.value; });
+    drawingFriezeMotif.addEventListener('change', e => drawingBackgroundState.frieze.motif = e.target.value);
+    drawingFriezeColor.addEventListener('input', e => drawingBackgroundState.frieze.color = e.target.value);
+    drawingFriezeSymmetry.addEventListener('change', e => drawingBackgroundState.frieze.symmetry = e.target.value);
+    drawingFriezeSize.addEventListener('input', e => { drawingBackgroundState.frieze.size = parseInt(e.target.value); dfSizeVal.textContent = e.target.value; });
+    drawingFriezeSpacing.addEventListener('input', e => { drawingBackgroundState.frieze.spacing = parseInt(e.target.value); dfSpacingVal.textContent = e.target.value; });
+    applyBackgroundBtn.addEventListener('click', applyBackground);
+    clearDrawingBtn.addEventListener('click', clearDrawing);
+    downloadDrawingBtn.addEventListener('click', () => {
+        const tempCanvas = document.createElement('canvas'); tempCanvas.width = drawingCanvas.width; tempCanvas.height = drawingCanvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(backgroundCanvas, 0, 0); tempCtx.drawImage(drawingCanvas, 0, 0);
+        const link = document.createElement('a'); link.download = `motif_kustom.png`; link.href = tempCanvas.toDataURL('image/png'); link.click();
+    });
+    window.addEventListener('resize', () => { setTimeout(handleGenerateClick, 100); setTimeout(resizeCanvases, 100);});
+
+    // Mockup Listeners
+    addDesignSlotBtn.addEventListener('click', createNewDesignSlot);
+    generateMockupBtn.addEventListener('click', async () => {
+        const validSlots = designSlots.filter(s => s.base64 && s.description.trim());
+        if (!mockupPromptInput.value.trim() || validSlots.length === 0) {
+            errorMessage.textContent = 'Mohon unggah setidaknya satu desain dan isi deskripsi penempatannya.';
+            errorMessage.classList.remove('hidden');
+            return;
+        }
+        errorMessage.classList.add('hidden');
+        resultImage.classList.add('hidden');
+        mockupPlaceholder.classList.add('hidden');
+        mockupLoader.classList.remove('hidden');
+        generateMockupBtn.disabled = true;
+        generateMockupBtn.textContent = 'Membuat mockup...';
+        downloadMockupBtn.classList.add('hidden');
+        
+        const mainPrompt = mockupPromptInput.value;
+        let placementInstructions = validSlots.map((slot, index) => `Gunakan Gambar ${index + 1} untuk pola pada ${slot.description}.`).join(' ');
+        const fullPrompt = `Buat mockup 3D fotorealistik. Deskripsi umum: ${mainPrompt}. Instruksi Penempatan Pola: ${placementInstructions} Terapkan pola secara alami mengikuti bentuk, lipatan, dan pencahayaan pada pakaian.`;
+
+        const apiParts = [{ text: fullPrompt }];
+        validSlots.forEach(slot => {
+            apiParts.push({ inlineData: { mimeType: slot.mimeType, data: slot.base64 } });
+        });
+
+        try {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: apiParts }],
+                generationConfig: { responseModalities: ['IMAGE'] },
+            };
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error?.message || 'Gagal menghasilkan gambar mockup.'); }
+            const result = await response.json();
+            const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+            if (base64Data) {
+                const imageUrl = `data:image/png;base64,${base64Data}`;
+                resultImage.src = imageUrl;
+                resultImage.classList.remove('hidden');
+                downloadMockupBtn.href = imageUrl;
+                downloadMockupBtn.download = 'mockup_produk.png';
+                downloadMockupBtn.classList.remove('hidden');
+            } else { throw new Error('Tidak ada gambar yang dihasilkan dalam respons AI.'); }
+        } catch (error) {
+            console.error('Error:', error);
+            errorMessage.textContent = `Terjadi kesalahan: ${error.message}`;
+            errorMessage.classList.remove('hidden');
+            mockupPlaceholder.classList.remove('hidden');
+            downloadMockupBtn.classList.add('hidden');
+        } finally {
+            mockupLoader.classList.add('hidden');
+            generateMockupBtn.disabled = false;
+            generateMockupBtn.textContent = 'Buat Mockup 3D';
+        }
+    });
+
+    // --- INITIALIZATION ---
+    createLayer('wallpaper');
+    createLayer('frieze');
+    populatePatternSelectors();
+    populateDrawingControls();
+    createNewDesignSlot(); // Start with one slot
+    setTimeout(handleGenerateClick, 100);
+    setTimeout(resizeCanvases, 100);
+});
+</script>
+
 </body>
 </html>
-
 
